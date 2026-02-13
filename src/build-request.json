@@ -1,0 +1,49 @@
+{
+  "kind": "build_request",
+  "title": "Fix OTP login phone number country code to India (+91)",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-6",
+      "text": "Update the OTP login phone number input to use India as the default country code (+91) and ensure the stored/returned phone number is normalized to an India (+91) E.164-style value before continuing the login flow.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "recent-messages-1"
+        ],
+        "quotes": [
+          "Country code is wrong. Country code for phone number should be India."
+        ]
+      },
+      "acceptanceCriteria": [
+        "On the login screen, the phone number input placeholder and/or prefilled prefix clearly indicates India (+91) instead of a US-style +1 placeholder.",
+        "If a user enters a 10-digit Indian mobile number without a country code, the app normalizes it to a +91XXXXXXXXXX value before calling onSuccess(phoneNumber) in OtpLoginCard.",
+        "If a user includes a country code, the app prevents or errors on non-India country codes (i.e., anything not starting with +91) with an English validation message.",
+        "The 'We sent a code to ...' text in the OTP step displays the normalized +91 number.",
+        "The OTP session stored via useOtpSession.markOtpVerified(phone) uses the normalized +91 phone number."
+      ]
+    }
+  ],
+  "constraints": [
+    "Use English for any user-facing text.",
+    "Do not edit files in frontend immutablePaths (e.g., frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui)."
+  ],
+  "nonGoals": [
+    "Implementing real SMS/OTP delivery/verification via an external provider.",
+    "Adding multi-country phone number support or a full country picker UI."
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 5,
+  "summary": "LocalBuzz mobile app with OTP login for Shop Owners and Customers, role selection after login, routing to Shop Dashboard or Customer Home Feed, clean UI, and location permission.",
+  "architectural_notes": [
+    "Two user roles: Shop Owner and Customer.",
+    "Authentication via mobile OTP for all users.",
+    "After OTP login, user selects role and is routed accordingly (Shop Dashboard or Customer Home Feed).",
+    "App requires location permission.",
+    "Phone number input/OTP login should default to India country code (+91)."
+  ],
+  "known_issues": [
+    "OTP login phone number country code is incorrect; should be India (+91)."
+  ],
+  "isFixRequest": true,
+  "existing_features": [
+    {
+      "id": "feature-create-the-basic-localbuzz-app-structure-with-mobile-first-navigation-and-three-primary-flows-screens-1-login-2-role-selection-shop-owner-vs-customer-and-3-post-login-destinations-shop-dashboard-and-customer-home-feed",
+      "title": "Create the basic LocalBuzz app structure with mobile-first navigation and three primary flows/screens: (1) Login, (2) Role Selection (Shop Owner vs Customer), and (3) post-login destinations: Shop Dashboard and Customer Home Feed.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-phone-number-otp-style-login-flow-for-both-user-types-collect-a-phone-number-request-an-otp-then-verify-the-otp-to-create-an-authenticated-session-for-the-current-principal",
+      "title": "Implement a phone-number OTP-style login flow for both user types: collect a phone number, request an OTP, then verify the OTP to create an authenticated session for the current principal.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-request-location-access-permission-on-the-client-and-when-granted-capture-the-user-s-current-coordinates-display-basic-location-status-in-the-ui-and-optionally-persist-the-last-known-location-to-the-backend-user-profile",
+      "title": "Request location access permission on the client and, when granted, capture the user’s current coordinates; display basic location status in the UI and optionally persist the last known location to the backend user profile.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-apply-a-clean-simple-consistent-visual-theme-for-localbuzz-across-all-screens-mobile-first-layout-typography-spacing-and-a-distinct-color-palette-that-is-not-blue-purple",
+      "title": "Apply a clean, simple, consistent visual theme for LocalBuzz across all screens (mobile-first layout, typography, spacing, and a distinct color palette that is not blue & purple).",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-otp-login-phone-number-input-to-use-india-as-the-default-country-code-91-and-ensure-the-stored-returned-phone-number-is-normalized-to-an-india-91-e-164-style-value-before-continuing-the-login-flow",
+      "title": "Update the OTP login phone number input to use India as the default country code (+91) and ensure the stored/returned phone number is normalized to an India (+91) E.164-style value before continuing the login flow.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Create basic LocalBuzz app structure with clean, simple UI",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Implement mobile OTP login flow for both Shop Owner and Customer users",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Post-login role selection (Shop Owner vs Customer) and redirect to Shop Dashboard or Customer Home Feed",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Request and use location access permission in the app",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Persist a minimal user profile in the backend keyed to the authenticated principal, including phone number, selected role (Shop Owner or Customer), and timestamps; expose APIs to read/update the current user profile.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "LocalBuzz",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

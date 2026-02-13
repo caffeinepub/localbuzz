@@ -1,0 +1,133 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        --radius: 0.75rem;
+        
+        /* Warm orange/coral palette for LocalBuzz */
+        --background: 0.99 0 0;
+        --foreground: 0.15 0 0;
+        
+        --card: 1 0 0;
+        --card-foreground: 0.15 0 0;
+        
+        --popover: 1 0 0;
+        --popover-foreground: 0.15 0 0;
+        
+        /* Primary: Warm coral/orange */
+        --primary: 0.65 0.18 35;
+        --primary-foreground: 0.99 0 0;
+        
+        /* Secondary: Soft peach */
+        --secondary: 0.95 0.05 45;
+        --secondary-foreground: 0.25 0 0;
+        
+        --muted: 0.96 0.01 45;
+        --muted-foreground: 0.50 0.02 35;
+        
+        /* Accent: Warm amber */
+        --accent: 0.75 0.15 55;
+        --accent-foreground: 0.15 0 0;
+        
+        --destructive: 0.58 0.24 25;
+        --destructive-foreground: 0.99 0 0;
+        
+        --border: 0.92 0.01 35;
+        --input: 0.92 0.01 35;
+        --ring: 0.65 0.18 35;
+        
+        --chart-1: 0.65 0.18 35;
+        --chart-2: 0.75 0.15 55;
+        --chart-3: 0.55 0.20 25;
+        --chart-4: 0.70 0.12 65;
+        --chart-5: 0.60 0.22 15;
+    }
+
+    .dark {
+        --background: 0.12 0 0;
+        --foreground: 0.98 0 0;
+        
+        --card: 0.18 0 0;
+        --card-foreground: 0.98 0 0;
+        
+        --popover: 0.15 0 0;
+        --popover-foreground: 0.98 0 0;
+        
+        /* Primary: Bright coral for dark mode */
+        --primary: 0.70 0.20 35;
+        --primary-foreground: 0.12 0 0;
+        
+        /* Secondary: Muted warm tone */
+        --secondary: 0.25 0.03 40;
+        --secondary-foreground: 0.98 0 0;
+        
+        --muted: 0.22 0.02 35;
+        --muted-foreground: 0.65 0.03 35;
+        
+        /* Accent: Warm amber for dark */
+        --accent: 0.65 0.18 50;
+        --accent-foreground: 0.98 0 0;
+        
+        --destructive: 0.60 0.25 25;
+        --destructive-foreground: 0.98 0 0;
+        
+        --border: 0.25 0.02 35;
+        --input: 0.25 0.02 35;
+        --ring: 0.70 0.20 35;
+        
+        --chart-1: 0.70 0.20 35;
+        --chart-2: 0.75 0.18 50;
+        --chart-3: 0.60 0.22 25;
+        --chart-4: 0.65 0.15 60;
+        --chart-5: 0.55 0.25 15;
+    }
+
+    * {
+        @apply border-border;
+    }
+    
+    body {
+        @apply bg-background text-foreground;
+        font-feature-settings: "rlig" 1, "calt" 1;
+    }
+    
+    /* Mobile-first touch targets */
+    button, a, [role="button"] {
+        @apply min-h-[44px] min-w-[44px];
+    }
+    
+    /* Smooth scrolling */
+    html {
+        scroll-behavior: smooth;
+    }
+    
+    /* Safe area insets for mobile */
+    @supports (padding: max(0px)) {
+        body {
+            padding-left: max(0px, env(safe-area-inset-left));
+            padding-right: max(0px, env(safe-area-inset-right));
+        }
+    }
+}
+
+/* Custom scrollbar for webkit browsers */
+@layer utilities {
+    .scrollbar-thin::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-track {
+        @apply bg-transparent;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+        @apply bg-border rounded-full;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+        @apply bg-muted-foreground/50;
+    }
+}

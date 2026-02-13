@@ -1,0 +1,26 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-update-the-otp-login-phone-number-input-to-use-india-as-the-default-country-code-91-and-ensure-the-stored-returned-phone-number-is-normalized-to-an-india-91-e-164-style-value-before-continuing-the-login-flow",
+      "featureTitle": "Update the OTP login phone number input to use India as the default country code (+91) and ensure the stored/returned phone number is normalized to an India (+91) E.164-style value before continuing the login flow.",
+      "files": [
+        "frontend/src/components/OtpLoginCard.tsx",
+        "frontend/src/pages/LoginPage.tsx",
+        "frontend/src/utils/phoneNumber.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-6"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

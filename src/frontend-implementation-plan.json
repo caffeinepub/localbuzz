@@ -1,0 +1,35 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Fix OTP login phone input to default to India (+91) and normalize to +91 E.164",
+  "requirements": [
+    {
+      "id": "REQ-6",
+      "summary": "Default OTP login phone input to India (+91), normalize entered numbers to +91XXXXXXXXXX, and block non-India country codes throughout the OTP flow and session storage.",
+      "acceptanceCriteria": [
+        "On the login screen, the phone number input placeholder and/or prefilled prefix clearly indicates India (+91) instead of a US-style +1 placeholder.",
+        "If a user enters a 10-digit Indian mobile number without a country code, the app normalizes it to a +91XXXXXXXXXX value before calling onSuccess(phoneNumber) in OtpLoginCard.",
+        "If a user includes a country code, the app prevents or errors on non-India country codes (i.e., anything not starting with +91) with an English validation message.",
+        "The 'We sent a code to ...' text in the OTP step displays the normalized +91 number.",
+        "The OTP session stored via useOtpSession.markOtpVerified(phone) uses the normalized +91 phone number."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/utils/phoneNumber.ts",
+          "operation": "create",
+          "description": "Add a small phone normalization/validation helper focused on India (+91) only: accept 10-digit Indian numbers and convert to +91XXXXXXXXXX, accept +91 with formatting characters and normalize to +91XXXXXXXXXX, and return an English validation error for any non-India country code or invalid length/characters."
+        },
+        {
+          "path": "frontend/src/components/OtpLoginCard.tsx",
+          "operation": "modify",
+          "description": "Update OTP login UI/logic to (1) show an India (+91) placeholder/prefix, (2) validate and normalize the phone number to +91XXXXXXXXXX before moving to the OTP step, (3) display the normalized +91 number in the 'We sent a code to ...' message, and (4) call onSuccess(normalizedPhoneNumber) on verify. Use existing shadcn-ui inputs/buttons already imported; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/LoginPage.tsx",
+          "operation": "modify",
+          "description": "Ensure the OTP success handler treats the phoneNumber argument as already-normalized +91XXXXXXXXXX and passes it through unchanged to useOtpSession.markOtpVerified(phone), so the stored OTP session phone matches the normalized value."
+        }
+      ]
+    }
+  ]
+}

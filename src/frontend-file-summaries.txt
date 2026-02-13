@@ -1,0 +1,17 @@
+{
+  "frontend/src/App.tsx": "Main application component with TanStack Router setup, protected routes, and role-based navigation; fixed React hooks rules violation by extracting root layout logic into a proper RootLayout component.",
+  "frontend/src/hooks/useQueries.ts": "React Query hooks for backend operations including user profile management (get/save), location persistence (get/set), with proper cache invalidation.",
+  "frontend/src/hooks/useOtpSession.ts": "Client-side session management hook that persists OTP verification status and phone number in localStorage across page refreshes.",
+  "frontend/src/hooks/useLocationPermission.ts": "Hook managing browser geolocation API access with permission states (not-requested/denied/granted), coordinate retrieval, and refresh functionality.",
+  "frontend/src/hooks/usePersistLastKnownLocation.ts": "Hook that automatically persists user coordinates to backend when location is available and user is authenticated.",
+  "frontend/src/components/MobileAppShell.tsx": "Mobile-first layout shell with sticky header, logout button, main content area with Outlet, and bottom navigation for switching between Shop and Customer views.",
+  "frontend/src/components/OtpLoginCard.tsx": "Two-step OTP login component with India (+91) country code prefix, phone number validation/normalization to +91XXXXXXXXXX format, and formatted display of the normalized number in the OTP verification step.",
+  "frontend/src/components/LocationStatusCard.tsx": "Card component displaying location permission status with badge indicators, coordinate display when granted, and refresh/enable location buttons.",
+  "frontend/src/pages/LoginPage.tsx": "Login page with LocalBuzz branding, OTP login flow with India phone number support, Internet Identity integration, and automatic redirect to role selection after successful authentication with normalized phone number.",
+  "frontend/src/pages/RoleSelectionPage.tsx": "Role selection page with two large cards (Shop Owner and Customer) that save user profile and navigate to appropriate dashboard based on selection.",
+  "frontend/src/pages/ShopDashboardPage.tsx": "Shop owner dashboard with location status, quick action buttons for product/inventory management, stats overview cards, and coming soon features section.",
+  "frontend/src/pages/CustomerHomeFeedPage.tsx": "Customer home feed with location status, search/filter interface, browsable category badges, nearby shops placeholder, and coming soon features.",
+  "frontend/src/index.css": "Global styles with warm coral/orange OKLCH color palette for LocalBuzz, mobile-first touch targets, safe area insets, and custom scrollbar styling.",
+  "frontend/tailwind.config.js": "Tailwind configuration with extended theme for LocalBuzz warm color palette, mobile-first container settings, and custom animations.",
+  "frontend/src/utils/phoneNumber.ts": "Phone number validation and normalization utilities specifically for Indian phone numbers (+91), converting 10-digit numbers to E.164 format and rejecting non-India country codes with English error messages."
+}
