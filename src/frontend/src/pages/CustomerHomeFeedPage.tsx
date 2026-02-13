@@ -66,7 +66,7 @@ export default function CustomerHomeFeedPage() {
           <CardHeader>
             <CardTitle>No shops found</CardTitle>
             <CardDescription>
-              Enable location access to discover local businesses around you
+              Enable location access above to discover local businesses around you
             </CardDescription>
           </CardHeader>
         </Card>

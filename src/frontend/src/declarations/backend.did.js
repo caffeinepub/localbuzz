@@ -8,6 +8,17 @@
 
 import { IDL } from '@icp-sdk/core/candid';
 
+export const _CaffeineStorageCreateCertificateResult = IDL.Record({
+  'method' : IDL.Text,
+  'blob_hash' : IDL.Text,
+});
+export const _CaffeineStorageRefillInformation = IDL.Record({
+  'proposed_top_up_amount' : IDL.Opt(IDL.Nat),
+});
+export const _CaffeineStorageRefillResult = IDL.Record({
+  'success' : IDL.Opt(IDL.Bool),
+  'topped_up_amount' : IDL.Opt(IDL.Nat),
+});
 export const UserRole = IDL.Variant({
   'admin' : IDL.Null,
   'user' : IDL.Null,
@@ -26,8 +37,46 @@ export const UserProfile = IDL.Record({
   'lastUpdated' : Time,
   'phoneNumber' : IDL.Text,
 });
+export const ExternalBlob = IDL.Vec(IDL.Nat8);
+export const Shop = IDL.Record({
+  'latitude' : IDL.Float64,
+  'owner' : IDL.Principal,
+  'name' : IDL.Text,
+  'createdAt' : Time,
+  'lastUpdated' : Time,
+  'longitude' : IDL.Float64,
+  'address' : IDL.Text,
+  'category' : IDL.Text,
+  'image' : ExternalBlob,
+});
 
 export const idlService = IDL.Service({
+  '_caffeineStorageBlobIsLive' : IDL.Func(
+      [IDL.Vec(IDL.Nat8)],
+      [IDL.Bool],
+      ['query'],
+    ),
+  '_caffeineStorageBlobsToDelete' : IDL.Func(
+      [],
+      [IDL.Vec(IDL.Vec(IDL.Nat8))],
+      ['query'],
+    ),
+  '_caffeineStorageConfirmBlobDeletion' : IDL.Func(
+      [IDL.Vec(IDL.Vec(IDL.Nat8))],
+      [],
+      [],
+    ),
+  '_caffeineStorageCreateCertificate' : IDL.Func(
+      [IDL.Text],
+      [_CaffeineStorageCreateCertificateResult],
+      [],
+    ),
+  '_caffeineStorageRefillCashier' : IDL.Func(
+      [IDL.Opt(_CaffeineStorageRefillInformation)],
+      [_CaffeineStorageRefillResult],
+      [],
+    ),
+  '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'getAllProfilesByRole' : IDL.Func(
@@ -35,22 +84,47 @@ export const idlService = IDL.Service({
       [IDL.Vec(UserProfile)],
       ['query'],
     ),
+  'getAllShops' : IDL.Func([], [IDL.Vec(Shop)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getLastKnownLocation' : IDL.Func([], [IDL.Opt(Location)], ['query']),
+  'getOtpChallenge' : IDL.Func([IDL.Text], [IDL.Text], []),
+  'getShop' : IDL.Func([IDL.Principal], [IDL.Opt(Shop)], ['query']),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
       [IDL.Opt(UserProfile)],
       ['query'],
     ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+  'registerShop' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Float64, IDL.Float64, ExternalBlob],
+      [Shop],
+      [],
+    ),
   'saveCallerUserProfile' : IDL.Func([IDL.Text, UserRole], [], []),
   'setLastKnownLocation' : IDL.Func([Location], [], []),
+  'updateShop' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Float64, IDL.Float64, ExternalBlob],
+      [Shop],
+      [],
+    ),
+  'verifyOtpToken' : IDL.Func([IDL.Text, IDL.Text], [], []),
 });
 
 export const idlInitArgs = [];
 
 export const idlFactory = ({ IDL }) => {
+  const _CaffeineStorageCreateCertificateResult = IDL.Record({
+    'method' : IDL.Text,
+    'blob_hash' : IDL.Text,
+  });
+  const _CaffeineStorageRefillInformation = IDL.Record({
+    'proposed_top_up_amount' : IDL.Opt(IDL.Nat),
+  });
+  const _CaffeineStorageRefillResult = IDL.Record({
+    'success' : IDL.Opt(IDL.Bool),
+    'topped_up_amount' : IDL.Opt(IDL.Nat),
+  });
   const UserRole = IDL.Variant({
     'admin' : IDL.Null,
     'user' : IDL.Null,
@@ -69,8 +143,46 @@ export const idlFactory = ({ IDL }) => {
     'lastUpdated' : Time,
     'phoneNumber' : IDL.Text,
   });
+  const ExternalBlob = IDL.Vec(IDL.Nat8);
+  const Shop = IDL.Record({
+    'latitude' : IDL.Float64,
+    'owner' : IDL.Principal,
+    'name' : IDL.Text,
+    'createdAt' : Time,
+    'lastUpdated' : Time,
+    'longitude' : IDL.Float64,
+    'address' : IDL.Text,
+    'category' : IDL.Text,
+    'image' : ExternalBlob,
+  });
   
   return IDL.Service({
+    '_caffeineStorageBlobIsLive' : IDL.Func(
+        [IDL.Vec(IDL.Nat8)],
+        [IDL.Bool],
+        ['query'],
+      ),
+    '_caffeineStorageBlobsToDelete' : IDL.Func(
+        [],
+        [IDL.Vec(IDL.Vec(IDL.Nat8))],
+        ['query'],
+      ),
+    '_caffeineStorageConfirmBlobDeletion' : IDL.Func(
+        [IDL.Vec(IDL.Vec(IDL.Nat8))],
+        [],
+        [],
+      ),
+    '_caffeineStorageCreateCertificate' : IDL.Func(
+        [IDL.Text],
+        [_CaffeineStorageCreateCertificateResult],
+        [],
+      ),
+    '_caffeineStorageRefillCashier' : IDL.Func(
+        [IDL.Opt(_CaffeineStorageRefillInformation)],
+        [_CaffeineStorageRefillResult],
+        [],
+      ),
+    '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'getAllProfilesByRole' : IDL.Func(
@@ -78,17 +190,31 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(UserProfile)],
         ['query'],
       ),
+    'getAllShops' : IDL.Func([], [IDL.Vec(Shop)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getLastKnownLocation' : IDL.Func([], [IDL.Opt(Location)], ['query']),
+    'getOtpChallenge' : IDL.Func([IDL.Text], [IDL.Text], []),
+    'getShop' : IDL.Func([IDL.Principal], [IDL.Opt(Shop)], ['query']),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],
         [IDL.Opt(UserProfile)],
         ['query'],
       ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+    'registerShop' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Float64, IDL.Float64, ExternalBlob],
+        [Shop],
+        [],
+      ),
     'saveCallerUserProfile' : IDL.Func([IDL.Text, UserRole], [], []),
     'setLastKnownLocation' : IDL.Func([Location], [], []),
+    'updateShop' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Float64, IDL.Float64, ExternalBlob],
+        [Shop],
+        [],
+      ),
+    'verifyOtpToken' : IDL.Func([IDL.Text, IDL.Text], [], []),
   });
 };
 

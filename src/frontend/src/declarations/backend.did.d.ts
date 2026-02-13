@@ -10,10 +10,22 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
+export type ExternalBlob = Uint8Array;
 export interface Location {
   'latitude' : number,
   'longitude' : number,
   'timestamp' : Time,
+}
+export interface Shop {
+  'latitude' : number,
+  'owner' : Principal,
+  'name' : string,
+  'createdAt' : Time,
+  'lastUpdated' : Time,
+  'longitude' : number,
+  'address' : string,
+  'category' : string,
+  'image' : ExternalBlob,
 }
 export type Time = bigint;
 export interface UserProfile {
@@ -26,17 +38,55 @@ export interface UserProfile {
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
+export interface _CaffeineStorageCreateCertificateResult {
+  'method' : string,
+  'blob_hash' : string,
+}
+export interface _CaffeineStorageRefillInformation {
+  'proposed_top_up_amount' : [] | [bigint],
+}
+export interface _CaffeineStorageRefillResult {
+  'success' : [] | [boolean],
+  'topped_up_amount' : [] | [bigint],
+}
 export interface _SERVICE {
+  '_caffeineStorageBlobIsLive' : ActorMethod<[Uint8Array], boolean>,
+  '_caffeineStorageBlobsToDelete' : ActorMethod<[], Array<Uint8Array>>,
+  '_caffeineStorageConfirmBlobDeletion' : ActorMethod<
+    [Array<Uint8Array>],
+    undefined
+  >,
+  '_caffeineStorageCreateCertificate' : ActorMethod<
+    [string],
+    _CaffeineStorageCreateCertificateResult
+  >,
+  '_caffeineStorageRefillCashier' : ActorMethod<
+    [[] | [_CaffeineStorageRefillInformation]],
+    _CaffeineStorageRefillResult
+  >,
+  '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'getAllProfilesByRole' : ActorMethod<[UserRole], Array<UserProfile>>,
+  'getAllShops' : ActorMethod<[], Array<Shop>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getLastKnownLocation' : ActorMethod<[], [] | [Location]>,
+  'getOtpChallenge' : ActorMethod<[string], string>,
+  'getShop' : ActorMethod<[Principal], [] | [Shop]>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
+  'registerShop' : ActorMethod<
+    [string, string, string, number, number, ExternalBlob],
+    Shop
+  >,
   'saveCallerUserProfile' : ActorMethod<[string, UserRole], undefined>,
   'setLastKnownLocation' : ActorMethod<[Location], undefined>,
+  'updateShop' : ActorMethod<
+    [string, string, string, number, number, ExternalBlob],
+    Shop
+  >,
+  'verifyOtpToken' : ActorMethod<[string, string], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

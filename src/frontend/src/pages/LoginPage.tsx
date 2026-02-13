@@ -20,9 +20,14 @@ export default function LoginPage() {
 
   const handleOtpSuccess = async (phoneNumber: string) => {
     // phoneNumber is already normalized to +91XXXXXXXXXX format
-    // First, authenticate with Internet Identity
+    // Ensure user is authenticated with Internet Identity before proceeding
     if (!identity) {
-      await login();
+      try {
+        await login();
+      } catch (error) {
+        console.error('Login error:', error);
+        return;
+      }
     }
     
     // Mark OTP as verified with the normalized phone number
@@ -30,6 +35,14 @@ export default function LoginPage() {
     
     // Navigate to role selection
     navigate({ to: '/role-selection' });
+  };
+
+  const handleInternetIdentityLogin = async () => {
+    try {
+      await login();
+    } catch (error) {
+      console.error('Login error:', error);
+    }
   };
 
   if (isInitializing) {
@@ -54,15 +67,17 @@ export default function LoginPage() {
           <p className="text-muted-foreground">Connect with local businesses</p>
         </div>
 
-        {/* OTP Login Card */}
+        {/* Authentication Flow */}
         {!identity ? (
           <div className="space-y-4">
-            <OtpLoginCard onSuccess={handleOtpSuccess} />
             <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-4">
+                First, authenticate with Internet Identity
+              </p>
               <Button
-                onClick={login}
+                onClick={handleInternetIdentityLogin}
                 disabled={isLoggingIn}
-                variant="outline"
+                variant="default"
                 className="w-full max-w-md"
                 size="lg"
               >
@@ -72,13 +87,15 @@ export default function LoginPage() {
                     Connecting...
                   </>
                 ) : (
-                  'Continue with Internet Identity'
+                  'Login with Internet Identity'
                 )}
               </Button>
             </div>
           </div>
         ) : (
-          <OtpLoginCard onSuccess={handleOtpSuccess} />
+          <div className="space-y-4">
+            <OtpLoginCard onSuccess={handleOtpSuccess} />
+          </div>
         )}
 
         {/* Footer */}

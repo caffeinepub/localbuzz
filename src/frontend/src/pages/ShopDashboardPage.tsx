@@ -1,9 +1,27 @@
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Store, Plus, BarChart3, Package } from 'lucide-react';
-import LocationStatusCard from '../components/LocationStatusCard';
+import { Store, Plus, Edit } from 'lucide-react';
+import { useNavigate } from '@tanstack/react-router';
+import { useGetCallerShop } from '../hooks/useShop';
+import ShopOpenClosedToggle from '../components/ShopOpenClosedToggle';
 
 export default function ShopDashboardPage() {
+  const navigate = useNavigate();
+  const { data: shop, isLoading: shopLoading } = useGetCallerShop();
+  const [isShopOpen, setIsShopOpen] = useState(true);
+
+  const handleRegisterShop = () => {
+    navigate({ to: '/shop-registration' });
+  };
+
+  const handlePostUpdate = () => {
+    // TODO: Navigate to post creation page when implemented
+    console.log('Post Update clicked');
+  };
+
+  const hasShop = !shopLoading && !!shop;
+
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
@@ -15,68 +33,111 @@ export default function ShopDashboardPage() {
         <p className="text-muted-foreground">Manage your business and reach local customers</p>
       </div>
 
-      {/* Location Card */}
-      <LocationStatusCard />
+      {/* Shop Registration CTA or Edit Button */}
+      {!shopLoading && !shop && (
+        <Card className="border-primary/50 bg-primary/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Store className="h-5 w-5 text-primary" />
+              Get Started
+            </CardTitle>
+            <CardDescription>
+              Register your shop to start reaching customers in your area
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={handleRegisterShop} className="w-full" size="lg">
+              <Plus className="mr-2 h-5 w-5" />
+              Register Your Shop
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Quick Actions */}
+      {shop && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-start justify-between">
+              <div className="space-y-1">
+                <CardTitle className="flex items-center gap-2">
+                  <Store className="h-5 w-5 text-primary" />
+                  {shop.name}
+                </CardTitle>
+                <CardDescription>{shop.category}</CardDescription>
+              </div>
+              <Button onClick={handleRegisterShop} variant="outline" size="sm">
+                <Edit className="mr-2 h-4 w-4" />
+                Edit
+              </Button>
+            </div>
+          </CardHeader>
+        </Card>
+      )}
+
+      {/* Post Update Button */}
       <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>Manage your shop and products</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-3">
-          <Button className="w-full justify-start" size="lg" variant="outline">
+        <CardContent className="pt-6">
+          <Button
+            onClick={handlePostUpdate}
+            className="w-full"
+            size="lg"
+            disabled={!hasShop}
+          >
             <Plus className="mr-2 h-5 w-5" />
-            Add New Product
+            Post Update
           </Button>
-          <Button className="w-full justify-start" size="lg" variant="outline">
-            <Package className="mr-2 h-5 w-5" />
-            Manage Inventory
-          </Button>
-          <Button className="w-full justify-start" size="lg" variant="outline">
-            <BarChart3 className="mr-2 h-5 w-5" />
-            View Analytics
-          </Button>
+          {!hasShop && !shopLoading && (
+            <p className="text-xs text-muted-foreground text-center mt-2">
+              Register your shop to post updates
+            </p>
+          )}
         </CardContent>
       </Card>
 
-      {/* Stats Overview */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardDescription>Total Products</CardDescription>
-            <CardTitle className="text-3xl">0</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-3">
-            <CardDescription>Active Offers</CardDescription>
-            <CardTitle className="text-3xl">0</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-3">
-            <CardDescription>Customers Reached</CardDescription>
-            <CardTitle className="text-3xl">0</CardTitle>
-          </CardHeader>
-        </Card>
-      </div>
-
-      {/* Coming Soon */}
-      <Card className="bg-muted/50">
+      {/* Open/Closed Toggle */}
+      <Card>
         <CardHeader>
-          <CardTitle>Coming Soon</CardTitle>
-          <CardDescription>
-            More features are on the way to help you grow your business
-          </CardDescription>
+          <CardTitle>Shop Status</CardTitle>
+          <CardDescription>Let customers know if you're open or closed</CardDescription>
         </CardHeader>
         <CardContent>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li>• Product catalog management</li>
-            <li>• Customer engagement tools</li>
-            <li>• Analytics and insights</li>
-            <li>• Promotional campaigns</li>
-          </ul>
+          <ShopOpenClosedToggle
+            isOpen={isShopOpen}
+            onChange={setIsShopOpen}
+            disabled={!hasShop}
+          />
+          {!hasShop && !shopLoading && (
+            <p className="text-xs text-muted-foreground text-center mt-2">
+              Register your shop to update status
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* My Active Posts */}
+      <Card>
+        <CardHeader>
+          <CardTitle>My Active Posts</CardTitle>
+          <CardDescription>Updates currently visible to customers</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 text-muted-foreground">
+            <p>No active posts yet</p>
+            <p className="text-sm mt-1">Click "Post Update" to create your first post</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Expired Posts */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Expired Posts</CardTitle>
+          <CardDescription>Past updates no longer visible to customers</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 text-muted-foreground">
+            <p>No expired posts</p>
+          </div>
         </CardContent>
       </Card>
     </div>

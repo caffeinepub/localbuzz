@@ -1,33 +1,65 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix OTP login phone input to default to India (+91) and normalize to +91 E.164",
+  "title": "Shop Dashboard UI update (Post Update, Open/Closed toggle, Active/Expired posts sections)",
   "requirements": [
     {
-      "id": "REQ-6",
-      "summary": "Default OTP login phone input to India (+91), normalize entered numbers to +91XXXXXXXXXX, and block non-India country codes throughout the OTP flow and session storage.",
+      "id": "REQ-18",
+      "summary": "Simplify /shop-dashboard layout and add Post Update button, Open/Closed toggle, and Active/Expired posts sections.",
       "acceptanceCriteria": [
-        "On the login screen, the phone number input placeholder and/or prefilled prefix clearly indicates India (+91) instead of a US-style +1 placeholder.",
-        "If a user enters a 10-digit Indian mobile number without a country code, the app normalizes it to a +91XXXXXXXXXX value before calling onSuccess(phoneNumber) in OtpLoginCard.",
-        "If a user includes a country code, the app prevents or errors on non-India country codes (i.e., anything not starting with +91) with an English validation message.",
-        "The 'We sent a code to ...' text in the OTP step displays the normalized +91 number.",
-        "The OTP session stored via useOtpSession.markOtpVerified(phone) uses the normalized +91 phone number."
+        "On route /shop-dashboard, the page shows a visible \"Post Update\" button.",
+        "On route /shop-dashboard, the page shows a toggle control with clear states \"Open\" and \"Closed\" (English text).",
+        "On route /shop-dashboard, the page shows a section labeled \"My Active Posts\".",
+        "On route /shop-dashboard, the page shows a section labeled \"Expired Posts\".",
+        "The overall layout is mobile-first, uncluttered, and easy to scan (simple vertical stacking, consistent spacing)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/utils/phoneNumber.ts",
+          "path": "frontend/src/pages/ShopDashboardPage.tsx",
+          "operation": "modify",
+          "description": "Replace the current dashboard content (quick actions, stats, coming soon) with the requested simple, mobile-first vertical layout. Use existing shadcn/ui primitives already imported (Button, Card, CardHeader, CardTitle, CardDescription, CardContent) to compose: (1) a primary \"Post Update\" button, (2) an Open/Closed toggle control with clear English labels, (3) a \"My Active Posts\" section, and (4) an \"Expired Posts\" section. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/ShopOpenClosedToggle.tsx",
           "operation": "create",
-          "description": "Add a small phone normalization/validation helper focused on India (+91) only: accept 10-digit Indian numbers and convert to +91XXXXXXXXXX, accept +91 with formatting characters and normalize to +91XXXXXXXXXX, and return an English validation error for any non-India country code or invalid length/characters."
+          "description": "Create a small presentational React component that renders an accessible Open/Closed toggle UI (e.g., two-button segmented control) using existing shadcn/ui Button styling (no edits under frontend/src/components/ui). This component should accept current state and onChange callback; state remains local to the dashboard (no persistence). Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/components/OtpLoginCard.tsx",
+          "path": "frontend/src/pages/ShopDashboardPage.tsx",
           "operation": "modify",
-          "description": "Update OTP login UI/logic to (1) show an India (+91) placeholder/prefix, (2) validate and normalize the phone number to +91XXXXXXXXXX before moving to the OTP step, (3) display the normalized +91 number in the 'We sent a code to ...' message, and (4) call onSuccess(normalizedPhoneNumber) on verify. Use existing shadcn-ui inputs/buttons already imported; verify the component's usage instructions before implementing."
-        },
+          "description": "Wire the new ShopOpenClosedToggle component into the dashboard above the posts sections, keep all user-facing text in English, and ensure the toggle is visually clear in both states. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-19",
+      "summary": "Preserve shop registration/edit entrypoint behavior on the dashboard without hiding new required controls.",
+      "acceptanceCriteria": [
+        "If no shop is returned for the current caller, the dashboard shows a clear register CTA that navigates to /shop-registration.",
+        "If a shop is returned for the current caller, the dashboard shows an edit action that navigates to /shop-registration.",
+        "These registration/edit controls do not conflict with or hide the required \"Post Update\", \"Open/Closed\" toggle, and the two posts sections."
+      ],
+      "file_operations": [
         {
-          "path": "frontend/src/pages/LoginPage.tsx",
+          "path": "frontend/src/pages/ShopDashboardPage.tsx",
           "operation": "modify",
-          "description": "Ensure the OTP success handler treats the phoneNumber argument as already-normalized +91XXXXXXXXXX and passes it through unchanged to useOtpSession.markOtpVerified(phone), so the stored OTP session phone matches the normalized value."
+          "description": "Keep the existing shop fetch logic (useGetCallerShop) and ensure the register CTA (when shop is null) and edit action (when shop exists) remain present and navigate to /shop-registration, while also keeping \"Post Update\", the Open/Closed toggle, and both posts sections visible on the page regardless of shop existence (controls may be disabled with explanatory English helper text if needed, but must remain visible). Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-20",
+      "summary": "Add simple English empty states for Active/Expired posts sections with no backend persistence.",
+      "acceptanceCriteria": [
+        "If there are no active posts to display, \"My Active Posts\" shows an empty-state message in English (e.g., \"No active posts yet\").",
+        "If there are no expired posts to display, \"Expired Posts\" shows an empty-state message in English (e.g., \"No expired posts\").",
+        "No backend APIs, state schema, or persistence are introduced for posts as part of this change."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/ShopDashboardPage.tsx",
+          "operation": "modify",
+          "description": "Implement the \"My Active Posts\" and \"Expired Posts\" sections as simple UI containers (e.g., Cards) that render fixed empty-state messages in English when there are no items (use local placeholder arrays or constant empty arrays; do not add React Query hooks or backend calls for posts). Verify the component's usage instructions before implementing."
         }
       ]
     }

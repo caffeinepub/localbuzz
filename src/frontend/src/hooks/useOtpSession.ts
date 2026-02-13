@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 
 const OTP_SESSION_KEY = 'localbuzz_otp_verified';
 const PHONE_NUMBER_KEY = 'localbuzz_phone_number';

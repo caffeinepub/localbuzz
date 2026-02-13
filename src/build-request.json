@@ -1,49 +1,77 @@
 {
   "kind": "build_request",
-  "title": "Fix OTP login phone number country code to India (+91)",
+  "title": "Implement the requested Shop Dashboard UI (Post Update, Open/Closed toggle, Active/Expired posts sections)",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-6",
-      "text": "Update the OTP login phone number input to use India as the default country code (+91) and ensure the stored/returned phone number is normalized to an India (+91) E.164-style value before continuing the login flow.",
+      "id": "REQ-18",
+      "text": "Update the Shop Dashboard page to match the requested simple layout by adding: (1) a primary button labeled \"Post Update\", (2) a toggle control to mark the shop as \"Open\" or \"Closed\", (3) a section titled \"My Active Posts\", and (4) a section titled \"Expired Posts\".",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-messages-1"
+          "msg-1"
         ],
         "quotes": [
-          "Country code is wrong. Country code for phone number should be India."
+          "Create Shop Dashboard with:\n\n1. Button: \"Post Update\"\n2. Toggle Button: Mark Shop Open / Closed\n3. Section: My Active Posts\n4. Section: Expired Posts\n\nKeep layout simple and easy to use."
         ]
       },
       "acceptanceCriteria": [
-        "On the login screen, the phone number input placeholder and/or prefilled prefix clearly indicates India (+91) instead of a US-style +1 placeholder.",
-        "If a user enters a 10-digit Indian mobile number without a country code, the app normalizes it to a +91XXXXXXXXXX value before calling onSuccess(phoneNumber) in OtpLoginCard.",
-        "If a user includes a country code, the app prevents or errors on non-India country codes (i.e., anything not starting with +91) with an English validation message.",
-        "The 'We sent a code to ...' text in the OTP step displays the normalized +91 number.",
-        "The OTP session stored via useOtpSession.markOtpVerified(phone) uses the normalized +91 phone number."
+        "On route /shop-dashboard, the page shows a visible \"Post Update\" button.",
+        "On route /shop-dashboard, the page shows a toggle control with clear states \"Open\" and \"Closed\" (English text).",
+        "On route /shop-dashboard, the page shows a section labeled \"My Active Posts\".",
+        "On route /shop-dashboard, the page shows a section labeled \"Expired Posts\".",
+        "The overall layout is mobile-first, uncluttered, and easy to scan (simple vertical stacking, consistent spacing)."
+      ]
+    },
+    {
+      "id": "REQ-19",
+      "text": "Ensure the Shop Dashboard still supports the existing shop registration/edit entrypoint: when the caller has no shop record, show a clear CTA to register; when a shop exists, allow navigating to the shop registration page to edit.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Step 3: Shop Dashboard"
+        ]
+      },
+      "acceptanceCriteria": [
+        "If no shop is returned for the current caller, the dashboard shows a clear register CTA that navigates to /shop-registration.",
+        "If a shop is returned for the current caller, the dashboard shows an edit action that navigates to /shop-registration.",
+        "These registration/edit controls do not conflict with or hide the required \"Post Update\", \"Open/Closed\" toggle, and the two posts sections."
+      ]
+    },
+    {
+      "id": "REQ-20",
+      "text": "For \"My Active Posts\" and \"Expired Posts\" sections, implement simple empty states (English text) when there are no items, without adding backend persistence yet.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Section: My Active Posts\n4. Section: Expired Posts"
+        ]
+      },
+      "acceptanceCriteria": [
+        "If there are no active posts to display, \"My Active Posts\" shows an empty-state message in English (e.g., \"No active posts yet\").",
+        "If there are no expired posts to display, \"Expired Posts\" shows an empty-state message in English (e.g., \"No expired posts\").",
+        "No backend APIs, state schema, or persistence are introduced for posts as part of this change."
       ]
     }
   ],
   "constraints": [
-    "Use English for any user-facing text.",
-    "Do not edit files in frontend immutablePaths (e.g., frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui)."
+    "Use English for all user-facing text.",
+    "Do not edit files under frontend/src/components/ui (compose existing UI components instead).",
+    "Keep the backend as a single Motoko actor in backend/main.mo; do not introduce additional backend services."
   ],
   "nonGoals": [
-    "Implementing real SMS/OTP delivery/verification via an external provider.",
-    "Adding multi-country phone number support or a full country picker UI."
+    "Implementing actual post creation, storage, expiration logic, or a posts feed backed by the canister.",
+    "Persisting the Open/Closed state to the backend (unless separately requested later).",
+    "Adding product catalog, inventory management, or analytics features beyond the requested Shop Dashboard elements."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

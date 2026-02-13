@@ -1,16 +1,40 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-13T14:44:44.977Z",
-  "summary": "Implemented India (+91) default/forced country code handling for OTP login by adding Indian phone normalization/validation utilities and integrating them into OtpLoginCard; normalized +91 number is displayed in the OTP step and passed through to LoginPage/useOtpSession.markOtpVerified.",
-  "missing_requirements": [],
+  "generatedAt": "2026-02-13T15:31:50.031Z",
+  "summary": "The diff clearly adds a Post Update button, an Open/Closed toggle control (with English labels), and preserves the shop registration/edit entrypoints on ShopDashboardPage. However, the ShopDashboardPage diff is truncated right when the \"My Active Posts\" section begins, so the presence of the full \"My Active Posts\" content, the \"Expired Posts\" section, and the required empty-state messages cannot be verified from the provided diff summary.",
+  "missing_requirements": [
+    {
+      "id": "REQ-18",
+      "requirement": "On route /shop-dashboard, the page shows a section labeled \"Expired Posts\".",
+      "reason": "ShopDashboardPage.tsx is truncated before showing whether the \"Expired Posts\" section is rendered.",
+      "evidence": [
+        "frontend/src/pages/ShopDashboardPage.tsx (truncated at start of \"My Active Posts\" card; no \"Expired Posts\" visible)"
+      ]
+    },
+    {
+      "id": "REQ-20",
+      "requirement": "Implement empty-state message in English for \"My Active Posts\" when there are no active posts.",
+      "reason": "The diff is truncated before the contents of the \"My Active Posts\" section, so it is not possible to confirm an empty-state message exists.",
+      "evidence": [
+        "frontend/src/pages/ShopDashboardPage.tsx (truncated; section content not shown)"
+      ]
+    },
+    {
+      "id": "REQ-20",
+      "requirement": "Implement empty-state message in English for \"Expired Posts\" when there are no expired posts.",
+      "reason": "The diff is truncated and does not show the \"Expired Posts\" section contents (or whether the section exists at all).",
+      "evidence": [
+        "frontend/src/pages/ShopDashboardPage.tsx (truncated; no \"Expired Posts\" section content visible)"
+      ]
+    }
+  ],
   "hallucinated_features": [],
-  "confidence": 0.86,
+  "confidence": 0.56,
   "changed_files": [
     "frontend-file-summaries.txt",
-    "frontend/src/components/OtpLoginCard.tsx",
-    "frontend/src/pages/LoginPage.tsx",
-    "frontend/src/utils/phoneNumber.ts",
+    "frontend/src/components/ShopOpenClosedToggle.tsx",
+    "frontend/src/pages/ShopDashboardPage.tsx",
     "project_state.json"
   ]
 }

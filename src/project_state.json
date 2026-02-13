@@ -1,16 +1,20 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 5,
-  "summary": "LocalBuzz mobile app with OTP login for Shop Owners and Customers, role selection after login, routing to Shop Dashboard or Customer Home Feed, clean UI, and location permission.",
+  "projectStateVersion": 15,
+  "summary": "LocalBuzz mobile app with OTP login for Shop Owners and Customers, role selection after login, routing to Shop Dashboard or Customer Home Feed, clean UI, location permission, and a Shop Owner registration flow that creates a Shop record linked to the owner user ID.",
   "architectural_notes": [
     "Two user roles: Shop Owner and Customer.",
     "Authentication via mobile OTP for all users.",
     "After OTP login, user selects role and is routed accordingly (Shop Dashboard or Customer Home Feed).",
     "App requires location permission.",
-    "Phone number input/OTP login should default to India country code (+91)."
+    "Phone number input/OTP login should default to India country code (+91).",
+    "Add a 'Shops' data model/table/collection to store Shop Owner registration details (shop name, category, address, latitude/longitude, image URL/path) and link each shop record to the owning user ID."
   ],
   "known_issues": [
-    "OTP login phone number country code is incorrect; should be India (+91)."
+    "OTP login phone number country code is incorrect; should be India (+91).",
+    "Users are not receiving OTP SMS on their phone numbers during login.",
+    "Location permission is being denied (location access request/handling is not working as expected).",
+    "App generation/build failed when attempting to create the Shop Dashboard (needs retry/fix)."
   ],
   "isFixRequest": true,
   "existing_features": [
@@ -53,6 +57,110 @@
         "REQ-6"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-replace-the-current-simulated-otp-flow-which-does-not-send-any-sms-with-a-functional-otp-challenge-flow-that-lets-the-user-obtain-an-otp-code-inside-the-app-and-verify-it-so-the-login-can-proceed-reliably-even-without-sms-delivery",
+      "title": "Replace the current simulated OTP flow (which does not send any SMS) with a functional OTP challenge flow that lets the user obtain an OTP code inside the app and verify it, so the login can proceed reliably even without SMS delivery.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-otp-ui-copy-and-states-in-the-login-card-to-match-the-actual-behavior-no-claim-that-an-sms-was-sent-and-add-a-clear-resend-code-action-on-the-otp-entry-step",
+      "title": "Update the OTP UI copy and states in the login card to match the actual behavior (no claim that an SMS was sent), and add a clear 'Resend code' action on the OTP entry step.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-harden-otp-input-validation-and-error-handling-so-common-user-mistakes-are-handled-clearly-wrong-length-non-numeric-wrong-code-expired-code-and-do-not-accidentally-authenticate-the-user",
+      "title": "Harden OTP input validation and error handling so common user mistakes are handled clearly (wrong length, non-numeric, wrong code, expired code) and do not accidentally authenticate the user.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-location-permission-hook-to-correctly-detect-and-reflect-the-browser-s-actual-geolocation-permission-state-on-load-and-after-user-actions-instead-of-defaulting-to-a-generic-denied-error-state",
+      "title": "Update the location permission hook to correctly detect and reflect the browser’s actual geolocation permission state on load and after user actions, instead of defaulting to a generic 'denied' error state.",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-improve-error-handling-for-geolocation-failures-so-users-can-reliably-recover-distinguish-permission-denial-vs-timeout-vs-position-unavailable-provide-clear-english-error-messages-and-allow-retry-flows-from-the-ui",
+      "title": "Improve error handling for geolocation failures so users can reliably recover: distinguish permission denial vs timeout vs position unavailable, provide clear English error messages, and allow retry flows from the UI.",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-locationstatuscard-ui-to-support-the-improved-permission-states-and-recovery-actions-including-showing-an-enable-retry-control-when-permission-is-denied-and-displaying-guidance-text-appropriate-to-each-error-state",
+      "title": "Update the LocationStatusCard UI to support the improved permission states and recovery actions, including showing an enable/retry control when permission is denied and displaying guidance text appropriate to each error state.",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-visible-back-navigation-control-on-every-top-level-page-route-in-the-localbuzz-app-login-role-selection-shop-dashboard-customer-home-positioned-consistently-in-the-page-header-area-using-english-user-facing-text-e-g-an-accessible-icon-button-with-an-aria-label-like-back-the-back-control-must-navigate-to-the-previous-in-app-route-when-possible-and-must-not-break-authentication-session-state",
+      "title": "Add a visible Back navigation control on every top-level page/route in the LocalBuzz app (Login, Role Selection, Shop Dashboard, Customer Home), positioned consistently in the page header area, using English user-facing text (e.g., an accessible icon button with an aria-label like \"Back\"). The Back control must navigate to the previous in-app route when possible and must not break authentication/session state.",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-shop-owner-registration-page-containing-a-form-with-the-following-fields-and-controls-shop-name-text-category-dropdown-grocery-clothing-electronics-medical-food-other-shop-address-text-textarea-auto-detected-gps-location-latitude-longitude-displayed-and-shop-image-upload-file-picker-with-preview",
+      "title": "Create a Shop Owner registration page containing a form with the following fields and controls: Shop Name (text), Category (dropdown: Grocery, Clothing, Electronics, Medical, Food, Other), Shop Address (text/textarea), auto-detected GPS location (latitude & longitude displayed), and Shop Image upload (file picker with preview).",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-wire-the-shop-registration-ui-to-backend-apis-using-react-query-hooks-including-loading-success-and-error-handling-and-ensure-the-created-shop-is-persisted-and-can-be-reloaded-for-the-same-owner",
+      "title": "Wire the Shop registration UI to backend APIs using React Query hooks, including loading, success, and error handling, and ensure the created Shop is persisted and can be reloaded for the same owner.",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-navigation-from-the-shop-dashboard-to-the-shop-registration-page-so-a-shop-owner-can-access-the-registration-form-from-the-main-shop-flow",
+      "title": "Add navigation from the Shop Dashboard to the Shop registration page so a Shop Owner can access the registration form from the main Shop flow.",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-shop-dashboard-page-to-match-the-requested-simple-layout-by-adding-1-a-primary-button-labeled-post-update-2-a-toggle-control-to-mark-the-shop-as-open-or-closed-3-a-section-titled-my-active-posts-and-4-a-section-titled-expired-posts",
+      "title": "Update the Shop Dashboard page to match the requested simple layout by adding: (1) a primary button labeled \"Post Update\", (2) a toggle control to mark the shop as \"Open\" or \"Closed\", (3) a section titled \"My Active Posts\", and (4) a section titled \"Expired Posts\".",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-shop-dashboard-still-supports-the-existing-shop-registration-edit-entrypoint-when-the-caller-has-no-shop-record-show-a-clear-cta-to-register-when-a-shop-exists-allow-navigating-to-the-shop-registration-page-to-edit",
+      "title": "Ensure the Shop Dashboard still supports the existing shop registration/edit entrypoint: when the caller has no shop record, show a clear CTA to register; when a shop exists, allow navigating to the shop registration page to edit.",
+      "reqIds": [
+        "REQ-19"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-for-my-active-posts-and-expired-posts-sections-implement-simple-empty-states-english-text-when-there-are-no-items-without-adding-backend-persistence-yet",
+      "title": "For \"My Active Posts\" and \"Expired Posts\" sections, implement simple empty states (English text) when there are no items, without adding backend persistence yet.",
+      "reqIds": [
+        "REQ-20"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -86,6 +194,32 @@
       "reqIds": [
         "REQ-3"
       ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Add a back button option on every screen/page throughout the app for consistent navigation",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "Shop Owner registration form to create a Shop (name, category dropdown, address, auto-detected GPS lat/long, image upload) saved under 'Shops' and linked to the owner's user ID",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-10",
+      "summary": "Add backend support for a new \"Shops\" collection that stores Shop Owner registration data (shop name, category, address, GPS latitude/longitude, and a shop image) and links each Shop record to the authenticated owner user ID (caller Principal).",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-11",
+      "summary": "Create Shop Dashboard UI with Post Update button, Open/Closed toggle, My Active Posts section, and Expired Posts section (simple layout)",
+      "reqIds": [],
       "status": "pending"
     }
   ],

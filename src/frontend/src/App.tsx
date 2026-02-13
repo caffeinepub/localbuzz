@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage';
 import RoleSelectionPage from './pages/RoleSelectionPage';
 import ShopDashboardPage from './pages/ShopDashboardPage';
 import CustomerHomeFeedPage from './pages/CustomerHomeFeedPage';
+import ShopRegistrationPage from './pages/ShopRegistrationPage';
 import MobileAppShell from './components/MobileAppShell';
 import { useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
@@ -34,12 +35,12 @@ function RootLayout() {
   const { isOtpVerified } = useOtpSession();
   const isAuthenticated = identity && isOtpVerified;
 
-  // For authenticated routes, use the shell
+  // For authenticated routes, use the shell (which now includes back button)
   if (isAuthenticated && window.location.pathname !== '/') {
     return <MobileAppShell />;
   }
 
-  // For login page, render outlet directly
+  // For login page, render outlet directly (no back button on login)
   return <Outlet />;
 }
 
@@ -75,6 +76,16 @@ const shopDashboardRoute = createRoute({
   ),
 });
 
+const shopRegistrationRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/shop-registration',
+  component: () => (
+    <ProtectedRoute>
+      <ShopRegistrationPage />
+    </ProtectedRoute>
+  ),
+});
+
 const customerHomeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/customer-home',
@@ -90,6 +101,7 @@ const routeTree = rootRoute.addChildren([
   indexRoute,
   roleSelectionRoute,
   shopDashboardRoute,
+  shopRegistrationRoute,
   customerHomeRoute,
 ]);
 

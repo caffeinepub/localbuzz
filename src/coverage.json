@@ -1,41 +1,61 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-13T14:44:44.980Z",
+  "generatedAt": "2026-02-13T15:31:50.034Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 1,
-    "implemented": 1,
+    "total": 3,
+    "implemented": 3,
     "items": [
       {
-        "id": "REQ-6",
-        "summary": "Update the OTP login phone number input to use India as the default country code (+91) and ensure the stored/returned phone number is normalized to an India (+91) E.164-style value before continuing the login flow.",
+        "id": "REQ-18",
+        "summary": "Update the Shop Dashboard page to match the requested simple layout by adding: (1) a primary button labeled \"Post Update\", (2) a toggle control to mark the shop as \"Open\" or \"Closed\", (3) a section titled \"My Active Posts\", and (4) a section titled \"Expired Posts\".",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/utils/phoneNumber.ts",
-          "frontend/src/components/OtpLoginCard.tsx",
-          "frontend/src/pages/LoginPage.tsx"
+          "frontend/src/pages/ShopDashboardPage.tsx",
+          "frontend/src/components/ShopOpenClosedToggle.tsx",
+          "frontend/src/pages/ShopDashboardPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/utils/phoneNumber.ts",
-          "frontend/src/components/OtpLoginCard.tsx",
-          "frontend/src/pages/LoginPage.tsx"
+          "frontend/src/pages/ShopDashboardPage.tsx",
+          "frontend/src/components/ShopOpenClosedToggle.tsx",
+          "frontend/src/pages/ShopDashboardPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-19",
+        "summary": "Ensure the Shop Dashboard still supports the existing shop registration/edit entrypoint: when the caller has no shop record, show a clear CTA to register; when a shop exists, allow navigating to the shop registration page to edit.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/ShopDashboardPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/ShopDashboardPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-20",
+        "summary": "For \"My Active Posts\" and \"Expired Posts\" sections, implement simple empty states (English text) when there are no items, without adding backend persistence yet.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/ShopDashboardPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/ShopDashboardPage.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
     "build-request.json",
-    "build-template/README.md",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/OtpLoginCard.tsx",
-    "frontend/src/pages/LoginPage.tsx",
-    "frontend/src/utils/phoneNumber.ts",
+    "frontend/src/components/ShopOpenClosedToggle.tsx",
+    "frontend/src/pages/ShopDashboardPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

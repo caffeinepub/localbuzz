@@ -2,12 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-the-otp-login-phone-number-input-to-use-india-as-the-default-country-code-91-and-ensure-the-stored-returned-phone-number-is-normalized-to-an-india-91-e-164-style-value-before-continuing-the-login-flow",
-      "featureTitle": "Update the OTP login phone number input to use India as the default country code (+91) and ensure the stored/returned phone number is normalized to an India (+91) E.164-style value before continuing the login flow.",
+      "featureId": "feature-update-the-shop-dashboard-page-to-match-the-requested-simple-layout-by-adding-1-a-primary-button-labeled-post-update-2-a-toggle-control-to-mark-the-shop-as-open-or-closed-3-a-section-titled-my-active-posts-and-4-a-section-titled-expired-posts",
+      "featureTitle": "Update the Shop Dashboard page to match the requested simple layout by adding: (1) a primary button labeled \"Post Update\", (2) a toggle control to mark the shop as \"Open\" or \"Closed\", (3) a section titled \"My Active Posts\", and (4) a section titled \"Expired Posts\".",
       "files": [
-        "frontend/src/components/OtpLoginCard.tsx",
-        "frontend/src/pages/LoginPage.tsx",
-        "frontend/src/utils/phoneNumber.ts"
+        "frontend/src/components/ShopOpenClosedToggle.tsx",
+        "frontend/src/pages/ShopDashboardPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -15,10 +14,51 @@
         "shadcn-ui@1.0.0",
         "build-template-react@1.0.0",
         "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-6"
+        "REQ-18"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-ensure-the-shop-dashboard-still-supports-the-existing-shop-registration-edit-entrypoint-when-the-caller-has-no-shop-record-show-a-clear-cta-to-register-when-a-shop-exists-allow-navigating-to-the-shop-registration-page-to-edit",
+      "featureTitle": "Ensure the Shop Dashboard still supports the existing shop registration/edit entrypoint: when the caller has no shop record, show a clear CTA to register; when a shop exists, allow navigating to the shop registration page to edit.",
+      "files": [
+        "frontend/src/pages/ShopDashboardPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-19"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-for-my-active-posts-and-expired-posts-sections-implement-simple-empty-states-english-text-when-there-are-no-items-without-adding-backend-persistence-yet",
+      "featureTitle": "For \"My Active Posts\" and \"Expired Posts\" sections, implement simple empty states (English text) when there are no items, without adding backend persistence yet.",
+      "files": [
+        "frontend/src/pages/ShopDashboardPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-20"
       ],
       "confidence": "high"
     }
