@@ -2,11 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-the-shop-dashboard-page-to-match-the-requested-simple-layout-by-adding-1-a-primary-button-labeled-post-update-2-a-toggle-control-to-mark-the-shop-as-open-or-closed-3-a-section-titled-my-active-posts-and-4-a-section-titled-expired-posts",
-      "featureTitle": "Update the Shop Dashboard page to match the requested simple layout by adding: (1) a primary button labeled \"Post Update\", (2) a toggle control to mark the shop as \"Open\" or \"Closed\", (3) a section titled \"My Active Posts\", and (4) a section titled \"Expired Posts\".",
+      "featureId": "feature-create-a-shop-owner-post-update-ui-flow-when-the-shop-owner-taps-post-update-from-the-shop-dashboard-navigate-to-a-new-page-containing-a-form-with-fields-title-short-text-description-optional-optional-image-upload-with-preview-and-expiry-option-today-2-days-custom-date",
+      "featureTitle": "Create a Shop Owner \"Post Update\" UI flow: when the Shop Owner taps \"Post Update\" from the Shop Dashboard, navigate to a new page containing a form with fields Title (short text), Description (optional), Optional Image upload (with preview), and Expiry option (Today / 2 Days / Custom Date).",
       "files": [
-        "frontend/src/components/ShopOpenClosedToggle.tsx",
-        "frontend/src/pages/ShopDashboardPage.tsx"
+        "frontend/src/App.tsx",
+        "frontend/src/pages/ShopPostUpdatePage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -18,15 +18,16 @@
         "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-18"
+        "REQ-23"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-ensure-the-shop-dashboard-still-supports-the-existing-shop-registration-edit-entrypoint-when-the-caller-has-no-shop-record-show-a-clear-cta-to-register-when-a-shop-exists-allow-navigating-to-the-shop-registration-page-to-edit",
-      "featureTitle": "Ensure the Shop Dashboard still supports the existing shop registration/edit entrypoint: when the caller has no shop record, show a clear CTA to register; when a shop exists, allow navigating to the shop registration page to edit.",
+      "featureId": "feature-wire-the-post-update-form-to-backend-apis-using-react-query-on-submit-create-a-shopupdate-show-loading-state-show-a-success-confirmation-in-english-and-navigate-back-to-the-shop-dashboard-or-otherwise-reset-the-form-after-success",
+      "featureTitle": "Wire the Post Update form to backend APIs using React Query: on submit, create a ShopUpdate, show loading state, show a success confirmation in English, and navigate back to the Shop Dashboard (or otherwise reset the form) after success.",
       "files": [
-        "frontend/src/pages/ShopDashboardPage.tsx"
+        "frontend/src/hooks/useShopUpdates.ts",
+        "frontend/src/pages/ShopPostUpdatePage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -38,13 +39,13 @@
         "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-19"
+        "REQ-24"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-for-my-active-posts-and-expired-posts-sections-implement-simple-empty-states-english-text-when-there-are-no-items-without-adding-backend-persistence-yet",
-      "featureTitle": "For \"My Active Posts\" and \"Expired Posts\" sections, implement simple empty states (English text) when there are no items, without adding backend persistence yet.",
+      "featureId": "feature-update-the-shop-dashboard-to-display-real-data-in-my-active-posts-and-expired-posts-sections-by-fetching-shopupdates-for-the-caller-keep-the-existing-english-empty-states-when-there-are-no-items",
+      "featureTitle": "Update the Shop Dashboard to display real data in \"My Active Posts\" and \"Expired Posts\" sections by fetching ShopUpdates for the caller; keep the existing English empty states when there are no items.",
       "files": [
         "frontend/src/pages/ShopDashboardPage.tsx"
       ],
@@ -58,7 +59,29 @@
         "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-20"
+        "REQ-25"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-ensure-expiry-date-selection-is-correctly-converted-to-a-backend-timestamp-today-end-of-day-or-within-same-day-2-days-now-2-days-and-custom-date-user-selected-date",
+      "featureTitle": "Ensure Expiry Date selection is correctly converted to a backend timestamp: Today (end of day or within same day), 2 Days (now + 2 days), and Custom Date (user-selected date).",
+      "files": [
+        "frontend/src/pages/ShopDashboardPage.tsx",
+        "frontend/src/pages/ShopPostUpdatePage.tsx",
+        "frontend/src/utils/time.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-26"
       ],
       "confidence": "high"
     }

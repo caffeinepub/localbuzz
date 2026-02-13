@@ -38,6 +38,15 @@ export interface UserProfile {
     lastUpdated: Time;
     phoneNumber: string;
 }
+export interface ShopUpdate {
+    title: string;
+    shopId: Principal;
+    expiryDate: Time;
+    shopLocation: Location;
+    description?: string;
+    timestamp: Time;
+    image?: ExternalBlob;
+}
 export enum UserRole {
     admin = "admin",
     user = "user",
@@ -45,18 +54,24 @@ export enum UserRole {
 }
 export interface backendInterface {
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
+    createShopUpdate(shopId: Principal, title: string, description: string | null, image: ExternalBlob | null, expiryDate: Time): Promise<string>;
+    deleteShopUpdate(updateId: string): Promise<void>;
+    getAllActiveShopUpdates(): Promise<Array<ShopUpdate>>;
     getAllProfilesByRole(role: UserRole): Promise<Array<UserProfile>>;
+    getAllShopUpdatesForShop(shopId: Principal): Promise<Array<ShopUpdate>>;
     getAllShops(): Promise<Array<Shop>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getLastKnownLocation(): Promise<Location | null>;
     getOtpChallenge(phoneNumber: string): Promise<string>;
     getShop(owner: Principal): Promise<Shop | null>;
+    getShopUpdate(updateId: string): Promise<ShopUpdate | null>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     registerShop(name: string, category: string, address: string, latitude: number, longitude: number, image: ExternalBlob): Promise<Shop>;
     saveCallerUserProfile(phoneNumber: string, role: UserRole): Promise<void>;
     setLastKnownLocation(location: Location): Promise<void>;
     updateShop(name: string, category: string, address: string, latitude: number, longitude: number, image: ExternalBlob): Promise<Shop>;
+    updateShopUpdate(updateId: string, title: string, description: string | null, image: ExternalBlob | null, expiryDate: Time): Promise<void>;
     verifyOtpToken(phoneNumber: string, code: string): Promise<void>;
 }

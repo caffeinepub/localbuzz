@@ -1,5 +1,5 @@
 {
-  "frontend/src/App.tsx": "Main application component with TanStack Router setup including new /shop-registration route, protected routes, and role-based navigation with MobileAppShell for authenticated routes.",
+  "frontend/src/App.tsx": "Main application component with TanStack Router setup including new /shop-post-update route, protected routes, and role-based navigation with MobileAppShell for authenticated routes.",
   "frontend/src/hooks/useQueries.ts": "React Query hooks for backend operations including user profile management (get/save), location persistence (get/set), with proper cache invalidation.",
   "frontend/src/hooks/useOtpSession.ts": "Client-side session management hook that persists OTP verification status and phone number in localStorage, only marking verified after successful backend verification.",
   "frontend/src/hooks/useLocationPermission.ts": "Hook managing browser geolocation with Permissions API integration that checks actual permission state on mount, distinguishes between permission-denied/timeout/unavailable errors, subscribes to permission changes, and auto-fetches coordinates when already granted.",
@@ -9,7 +9,7 @@
   "frontend/src/components/LocationStatusCard.tsx": "Card component displaying location permission status with distinct UI states for not-requested/prompt/denied/granted, showing detailed English guidance for denied state with browser settings instructions, error-specific retry actions for timeout/unavailable, and coordinate display with refresh for granted state.",
   "frontend/src/pages/LoginPage.tsx": "Login page requiring Internet Identity authentication first, then OTP verification flow with normalized phone number handling and automatic redirect to role selection after successful verification.",
   "frontend/src/pages/RoleSelectionPage.tsx": "Role selection page with two large cards (Shop Owner and Customer) that save user profile and navigate to appropriate dashboard based on selection.",
-  "frontend/src/pages/ShopDashboardPage.tsx": "Simplified shop dashboard with Post Update button, Open/Closed toggle, My Active Posts and Expired Posts sections, preserving shop registration/edit flow with helper text when no shop exists.",
+  "frontend/src/pages/ShopDashboardPage.tsx": "Shop dashboard with Post Update button navigation, Open/Closed toggle, real ShopUpdates fetched and split into Active vs Expired sections with title/expiry/image display, preserving shop registration/edit flow and empty states.",
   "frontend/src/pages/CustomerHomeFeedPage.tsx": "Customer home feed with location status card, search/filter interface, browsable category badges, nearby shops placeholder with updated helper text, and coming soon features section.",
   "frontend/src/index.css": "Global styles with warm coral/orange OKLCH color palette for LocalBuzz, mobile-first touch targets, safe area insets, and custom scrollbar styling.",
   "frontend/tailwind.config.js": "Tailwind configuration with extended theme for LocalBuzz warm color palette, mobile-first container settings, and custom animations.",
@@ -19,5 +19,8 @@
   "frontend/src/components/AppBackButton.tsx": "Reusable, keyboard-accessible Back button component with English aria-label that uses the app back-navigation hook for safe navigation.",
   "frontend/src/hooks/useShop.ts": "React Query hooks for Shop operations including fetching caller's shop using identity principal, registering new shop, and updating existing shop with proper cache invalidation and error handling.",
   "frontend/src/pages/ShopRegistrationPage.tsx": "Shop registration/update form with shop name, category dropdown, address, GPS location display, image upload with preview, validation, upload progress tracking, and success/error states using ExternalBlob for image storage.",
-  "frontend/src/components/ShopOpenClosedToggle.tsx": "Presentational toggle component with two buttons (Open/Closed) using shadcn/ui Button styling, accepting current state and onChange callback."
+  "frontend/src/components/ShopOpenClosedToggle.tsx": "Presentational toggle component with two buttons (Open/Closed) using shadcn/ui Button styling, accepting current state and onChange callback.",
+  "frontend/src/utils/time.ts": "Time utilities for converting JavaScript dates to backend Time.Time format (nanoseconds) and comparing timestamps for active/expired classification with helpers for Today, 2 Days, and Custom Date expiry options.",
+  "frontend/src/hooks/useShopUpdates.ts": "React Query hooks for ShopUpdates operations including fetching caller's shop updates and creating new updates with proper cache invalidation.",
+  "frontend/src/pages/ShopPostUpdatePage.tsx": "Protected page for shop owners to create updates with title (required, max 100 chars), optional description, optional image upload with preview, and expiry selection (Today/2 Days/Custom Date) with validation and success/error handling."
 }

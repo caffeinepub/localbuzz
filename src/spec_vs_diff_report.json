@@ -1,40 +1,100 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-13T15:31:50.031Z",
-  "summary": "The diff clearly adds a Post Update button, an Open/Closed toggle control (with English labels), and preserves the shop registration/edit entrypoints on ShopDashboardPage. However, the ShopDashboardPage diff is truncated right when the \"My Active Posts\" section begins, so the presence of the full \"My Active Posts\" content, the \"Expired Posts\" section, and the required empty-state messages cannot be verified from the provided diff summary.",
+  "generatedAt": "2026-02-13T15:43:26.894Z",
+  "summary": "The diff adds a ShopUpdates React Query hook, a new Shop Owner Post Update page/route, and time utilities for expiry timestamps. The backend adds a ShopUpdate type and a shopUpdates map, but the diff summary is truncated and does not show the required backend create/fetch APIs or full frontend submit/success/navigation behavior, so several requirements cannot be confirmed as implemented.",
   "missing_requirements": [
     {
-      "id": "REQ-18",
-      "requirement": "On route /shop-dashboard, the page shows a section labeled \"Expired Posts\".",
-      "reason": "ShopDashboardPage.tsx is truncated before showing whether the \"Expired Posts\" section is rendered.",
+      "id": "REQ-21",
+      "requirement": "Persist ShopUpdates in canister state and enforce authenticated-caller permission checks on write methods.",
+      "reason": "Although a ShopUpdate type and a shopUpdates map are shown, the diff does not show any ShopUpdate write method implementation or any AccessControl checks applied to such methods.",
       "evidence": [
-        "frontend/src/pages/ShopDashboardPage.tsx (truncated at start of \"My Active Posts\" card; no \"Expired Posts\" visible)"
+        "backend/main.mo"
       ]
     },
     {
-      "id": "REQ-20",
-      "requirement": "Implement empty-state message in English for \"My Active Posts\" when there are no active posts.",
-      "reason": "The diff is truncated before the contents of the \"My Active Posts\" section, so it is not possible to confirm an empty-state message exists.",
+      "id": "REQ-22",
+      "requirement": "Backend API method to create a ShopUpdate for the caller and return the created record, trapping with a clear error if caller has no registered shop.",
+      "reason": "Frontend calls actor.createShopUpdate(...), but the backend diff excerpt does not include the createShopUpdate method body or its authorization/no-shop trap behavior.",
       "evidence": [
-        "frontend/src/pages/ShopDashboardPage.tsx (truncated; section content not shown)"
+        "backend/main.mo",
+        "frontend/src/hooks/useShopUpdates.ts"
       ]
     },
     {
-      "id": "REQ-20",
-      "requirement": "Implement empty-state message in English for \"Expired Posts\" when there are no expired posts.",
-      "reason": "The diff is truncated and does not show the \"Expired Posts\" section contents (or whether the section exists at all).",
+      "id": "REQ-22",
+      "requirement": "On create, backend must attach shopLocation from the caller’s stored Shop record (not client-provided coordinates).",
+      "reason": "No backend implementation is shown that reads the caller’s Shop record and copies latitude/longitude into the ShopUpdate.shopLocation.",
       "evidence": [
-        "frontend/src/pages/ShopDashboardPage.tsx (truncated; no \"Expired Posts\" section content visible)"
+        "backend/main.mo"
+      ]
+    },
+    {
+      "id": "REQ-22",
+      "requirement": "Backend query method(s) to fetch the caller’s ShopUpdates and distinguish active vs expired based on expiryDate relative to now.",
+      "reason": "Frontend calls actor.getAllShopUpdatesForShop(principal), but the backend diff excerpt does not show any query method implementation or active/expired filtering support.",
+      "evidence": [
+        "backend/main.mo",
+        "frontend/src/hooks/useShopUpdates.ts"
+      ]
+    },
+    {
+      "id": "REQ-23",
+      "requirement": "Post Update page form must offer expiry options exactly: Today / 2 Days / Custom Date (date picker).",
+      "reason": "The page defines an ExpiryOption union and uses time helpers, but the truncated diff does not show the actual rendered UI controls to confirm the options are presented exactly as required.",
+      "evidence": [
+        "frontend/src/pages/ShopPostUpdatePage.tsx"
+      ]
+    },
+    {
+      "id": "REQ-24",
+      "requirement": "On submit: show loading state, disable submit button, show clear English success message, then navigate back to Shop Dashboard (or reset form) after success; on backend error show clear English error and do not navigate away.",
+      "reason": "The Post Update page is truncated at the mutation call (\"await createUpdate.mutateAsy...\") and does not show the success/error handling, loading/disabled submit state, or navigation behavior.",
+      "evidence": [
+        "frontend/src/pages/ShopPostUpdatePage.tsx"
+      ]
+    },
+    {
+      "id": "REQ-25",
+      "requirement": "Keep existing English empty states visible when there are no items in Active/Expired sections.",
+      "reason": "ShopDashboardPage is truncated before the My Active Posts / Expired Posts rendering; the diff summary claims empty states are preserved but the provided excerpt does not show them.",
+      "evidence": [
+        "frontend/src/pages/ShopDashboardPage.tsx"
       ]
     }
   ],
-  "hallucinated_features": [],
+  "hallucinated_features": [
+    {
+      "description": "Image upload validation for MIME type and a 5MB size limit.",
+      "reason": "The BuildRequest requires optional image upload with preview but does not request specific validation rules (file type/size caps).",
+      "evidence": [
+        "frontend/src/pages/ShopPostUpdatePage.tsx"
+      ]
+    },
+    {
+      "description": "Upload progress tracking via ExternalBlob.withUploadProgress and a local uploadProgress state.",
+      "reason": "The BuildRequest does not ask for upload progress reporting.",
+      "evidence": [
+        "frontend/src/pages/ShopPostUpdatePage.tsx"
+      ]
+    },
+    {
+      "description": "Frontend passes an explicit shopId (identity principal) into createShopUpdate and calls getAllShopUpdatesForShop(principal).",
+      "reason": "Requirements specify APIs for the current shop owner (caller-derived); they do not request APIs that accept an explicit shop principal parameter from the client.",
+      "evidence": [
+        "frontend/src/hooks/useShopUpdates.ts"
+      ]
+    }
+  ],
   "confidence": 0.56,
   "changed_files": [
+    "backend/main.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/components/ShopOpenClosedToggle.tsx",
+    "frontend/src/App.tsx",
+    "frontend/src/hooks/useShopUpdates.ts",
     "frontend/src/pages/ShopDashboardPage.tsx",
+    "frontend/src/pages/ShopPostUpdatePage.tsx",
+    "frontend/src/utils/time.ts",
     "project_state.json"
   ]
 }

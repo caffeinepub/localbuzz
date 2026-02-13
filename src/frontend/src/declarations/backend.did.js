@@ -24,11 +24,21 @@ export const UserRole = IDL.Variant({
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
+export const ExternalBlob = IDL.Vec(IDL.Nat8);
 export const Time = IDL.Int;
 export const Location = IDL.Record({
   'latitude' : IDL.Float64,
   'longitude' : IDL.Float64,
   'timestamp' : Time,
+});
+export const ShopUpdate = IDL.Record({
+  'title' : IDL.Text,
+  'shopId' : IDL.Principal,
+  'expiryDate' : Time,
+  'shopLocation' : Location,
+  'description' : IDL.Opt(IDL.Text),
+  'timestamp' : Time,
+  'image' : IDL.Opt(ExternalBlob),
 });
 export const UserProfile = IDL.Record({
   'lastKnownLocation' : IDL.Opt(Location),
@@ -37,7 +47,6 @@ export const UserProfile = IDL.Record({
   'lastUpdated' : Time,
   'phoneNumber' : IDL.Text,
 });
-export const ExternalBlob = IDL.Vec(IDL.Nat8);
 export const Shop = IDL.Record({
   'latitude' : IDL.Float64,
   'owner' : IDL.Principal,
@@ -79,9 +88,21 @@ export const idlService = IDL.Service({
   '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+  'createShopUpdate' : IDL.Func(
+      [IDL.Principal, IDL.Text, IDL.Opt(IDL.Text), IDL.Opt(ExternalBlob), Time],
+      [IDL.Text],
+      [],
+    ),
+  'deleteShopUpdate' : IDL.Func([IDL.Text], [], []),
+  'getAllActiveShopUpdates' : IDL.Func([], [IDL.Vec(ShopUpdate)], ['query']),
   'getAllProfilesByRole' : IDL.Func(
       [UserRole],
       [IDL.Vec(UserProfile)],
+      ['query'],
+    ),
+  'getAllShopUpdatesForShop' : IDL.Func(
+      [IDL.Principal],
+      [IDL.Vec(ShopUpdate)],
       ['query'],
     ),
   'getAllShops' : IDL.Func([], [IDL.Vec(Shop)], ['query']),
@@ -90,6 +111,7 @@ export const idlService = IDL.Service({
   'getLastKnownLocation' : IDL.Func([], [IDL.Opt(Location)], ['query']),
   'getOtpChallenge' : IDL.Func([IDL.Text], [IDL.Text], []),
   'getShop' : IDL.Func([IDL.Principal], [IDL.Opt(Shop)], ['query']),
+  'getShopUpdate' : IDL.Func([IDL.Text], [IDL.Opt(ShopUpdate)], ['query']),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
       [IDL.Opt(UserProfile)],
@@ -106,6 +128,11 @@ export const idlService = IDL.Service({
   'updateShop' : IDL.Func(
       [IDL.Text, IDL.Text, IDL.Text, IDL.Float64, IDL.Float64, ExternalBlob],
       [Shop],
+      [],
+    ),
+  'updateShopUpdate' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Opt(ExternalBlob), Time],
+      [],
       [],
     ),
   'verifyOtpToken' : IDL.Func([IDL.Text, IDL.Text], [], []),
@@ -130,11 +157,21 @@ export const idlFactory = ({ IDL }) => {
     'user' : IDL.Null,
     'guest' : IDL.Null,
   });
+  const ExternalBlob = IDL.Vec(IDL.Nat8);
   const Time = IDL.Int;
   const Location = IDL.Record({
     'latitude' : IDL.Float64,
     'longitude' : IDL.Float64,
     'timestamp' : Time,
+  });
+  const ShopUpdate = IDL.Record({
+    'title' : IDL.Text,
+    'shopId' : IDL.Principal,
+    'expiryDate' : Time,
+    'shopLocation' : Location,
+    'description' : IDL.Opt(IDL.Text),
+    'timestamp' : Time,
+    'image' : IDL.Opt(ExternalBlob),
   });
   const UserProfile = IDL.Record({
     'lastKnownLocation' : IDL.Opt(Location),
@@ -143,7 +180,6 @@ export const idlFactory = ({ IDL }) => {
     'lastUpdated' : Time,
     'phoneNumber' : IDL.Text,
   });
-  const ExternalBlob = IDL.Vec(IDL.Nat8);
   const Shop = IDL.Record({
     'latitude' : IDL.Float64,
     'owner' : IDL.Principal,
@@ -185,9 +221,27 @@ export const idlFactory = ({ IDL }) => {
     '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+    'createShopUpdate' : IDL.Func(
+        [
+          IDL.Principal,
+          IDL.Text,
+          IDL.Opt(IDL.Text),
+          IDL.Opt(ExternalBlob),
+          Time,
+        ],
+        [IDL.Text],
+        [],
+      ),
+    'deleteShopUpdate' : IDL.Func([IDL.Text], [], []),
+    'getAllActiveShopUpdates' : IDL.Func([], [IDL.Vec(ShopUpdate)], ['query']),
     'getAllProfilesByRole' : IDL.Func(
         [UserRole],
         [IDL.Vec(UserProfile)],
+        ['query'],
+      ),
+    'getAllShopUpdatesForShop' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Vec(ShopUpdate)],
         ['query'],
       ),
     'getAllShops' : IDL.Func([], [IDL.Vec(Shop)], ['query']),
@@ -196,6 +250,7 @@ export const idlFactory = ({ IDL }) => {
     'getLastKnownLocation' : IDL.Func([], [IDL.Opt(Location)], ['query']),
     'getOtpChallenge' : IDL.Func([IDL.Text], [IDL.Text], []),
     'getShop' : IDL.Func([IDL.Principal], [IDL.Opt(Shop)], ['query']),
+    'getShopUpdate' : IDL.Func([IDL.Text], [IDL.Opt(ShopUpdate)], ['query']),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],
         [IDL.Opt(UserProfile)],
@@ -212,6 +267,11 @@ export const idlFactory = ({ IDL }) => {
     'updateShop' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Text, IDL.Float64, IDL.Float64, ExternalBlob],
         [Shop],
+        [],
+      ),
+    'updateShopUpdate' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Opt(ExternalBlob), Time],
+        [],
         [],
       ),
     'verifyOtpToken' : IDL.Func([IDL.Text, IDL.Text], [], []),

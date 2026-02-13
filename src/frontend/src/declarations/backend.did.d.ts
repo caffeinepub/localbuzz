@@ -27,6 +27,15 @@ export interface Shop {
   'category' : string,
   'image' : ExternalBlob,
 }
+export interface ShopUpdate {
+  'title' : string,
+  'shopId' : Principal,
+  'expiryDate' : Time,
+  'shopLocation' : Location,
+  'description' : [] | [string],
+  'timestamp' : Time,
+  'image' : [] | [ExternalBlob],
+}
 export type Time = bigint;
 export interface UserProfile {
   'lastKnownLocation' : [] | [Location],
@@ -67,13 +76,21 @@ export interface _SERVICE {
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'createShopUpdate' : ActorMethod<
+    [Principal, string, [] | [string], [] | [ExternalBlob], Time],
+    string
+  >,
+  'deleteShopUpdate' : ActorMethod<[string], undefined>,
+  'getAllActiveShopUpdates' : ActorMethod<[], Array<ShopUpdate>>,
   'getAllProfilesByRole' : ActorMethod<[UserRole], Array<UserProfile>>,
+  'getAllShopUpdatesForShop' : ActorMethod<[Principal], Array<ShopUpdate>>,
   'getAllShops' : ActorMethod<[], Array<Shop>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getLastKnownLocation' : ActorMethod<[], [] | [Location]>,
   'getOtpChallenge' : ActorMethod<[string], string>,
   'getShop' : ActorMethod<[Principal], [] | [Shop]>,
+  'getShopUpdate' : ActorMethod<[string], [] | [ShopUpdate]>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'registerShop' : ActorMethod<
@@ -85,6 +102,10 @@ export interface _SERVICE {
   'updateShop' : ActorMethod<
     [string, string, string, number, number, ExternalBlob],
     Shop
+  >,
+  'updateShopUpdate' : ActorMethod<
+    [string, string, [] | [string], [] | [ExternalBlob], Time],
+    undefined
   >,
   'verifyOtpToken' : ActorMethod<[string, string], undefined>,
 }

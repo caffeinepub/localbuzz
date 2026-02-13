@@ -6,6 +6,7 @@ import RoleSelectionPage from './pages/RoleSelectionPage';
 import ShopDashboardPage from './pages/ShopDashboardPage';
 import CustomerHomeFeedPage from './pages/CustomerHomeFeedPage';
 import ShopRegistrationPage from './pages/ShopRegistrationPage';
+import ShopPostUpdatePage from './pages/ShopPostUpdatePage';
 import MobileAppShell from './components/MobileAppShell';
 import { useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
@@ -86,6 +87,16 @@ const shopRegistrationRoute = createRoute({
   ),
 });
 
+const shopPostUpdateRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/shop-post-update',
+  component: () => (
+    <ProtectedRoute>
+      <ShopPostUpdatePage />
+    </ProtectedRoute>
+  ),
+});
+
 const customerHomeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/customer-home',
@@ -102,6 +113,7 @@ const routeTree = rootRoute.addChildren([
   roleSelectionRoute,
   shopDashboardRoute,
   shopRegistrationRoute,
+  shopPostUpdateRoute,
   customerHomeRoute,
 ]);
 

@@ -9,11 +9,10 @@ import Runtime "mo:core/Runtime";
 import AccessControl "authorization/access-control";
 import Principal "mo:core/Principal";
 import Int "mo:core/Int";
+import Nat "mo:core/Nat";
 import MixinAuthorization "authorization/MixinAuthorization";
 import Storage "blob-storage/Storage";
 import MixinStorage "blob-storage/Mixin";
-
-
 
 actor {
   public type UserProfile = {
@@ -24,16 +23,28 @@ actor {
     lastKnownLocation : ?Location;
   };
 
-  public type Location = {
-    latitude : Float;
-    longitude : Float;
-    timestamp : Time.Time;
-  };
-
   module UserProfile {
     public func compareByCreationTime(profile1 : UserProfile, profile2 : UserProfile) : Order.Order {
       Int.compare(profile1.createdAt, profile2.createdAt);
     };
+  };
+
+  public type Shop = {
+    name : Text;
+    category : Text;
+    address : Text;
+    latitude : Float;
+    longitude : Float;
+    image : Storage.ExternalBlob;
+    owner : Principal;
+    createdAt : Time.Time;
+    lastUpdated : Time.Time;
+  };
+
+  public type Location = {
+    latitude : Float;
+    longitude : Float;
+    timestamp : Time.Time;
   };
 
   public type OTPEntry = {
@@ -42,11 +53,25 @@ actor {
     verified : Bool;
   };
 
-  var profiles = Map.empty<Principal, UserProfile>();
-  var otpChallenges = Map.empty<Text, OTPEntry>();
+  public type ShopUpdate = {
+    shopId : Principal;
+    title : Text;
+    description : ?Text;
+    image : ?Storage.ExternalBlob;
+    expiryDate : Time.Time;
+    timestamp : Time.Time;
+    shopLocation : Location;
+  };
 
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
+
+  var profiles = Map.empty<Principal, UserProfile>();
+  var otpChallenges = Map.empty<Text, OTPEntry>();
+  var shops = Map.empty<Principal, Shop>();
+  var shopUpdates = Map.empty<Text, ShopUpdate>();
+
+  include MixinStorage();
 
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
@@ -168,23 +193,6 @@ actor {
     };
   };
 
-  // Shops collection extension
-  public type Shop = {
-    name : Text;
-    category : Text;
-    address : Text;
-    latitude : Float;
-    longitude : Float;
-    image : Storage.ExternalBlob;
-    owner : Principal;
-    createdAt : Time.Time;
-    lastUpdated : Time.Time;
-  };
-
-  let shops = Map.empty<Principal, Shop>();
-
-  include MixinStorage();
-
   public shared ({ caller }) func registerShop(
     name : Text,
     category : Text,
@@ -257,4 +265,135 @@ actor {
       };
     };
   };
+
+  // Shop Update APIs
+
+  public shared ({ caller }) func createShopUpdate(
+    shopId : Principal,
+    title : Text,
+    description : ?Text,
+    image : ?Storage.ExternalBlob,
+    expiryDate : Time.Time,
+  ) : async Text {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only shop owners can create updates");
+    };
+
+    // Verify ownership: caller must own the shop they're creating an update for
+    if (caller != shopId and not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Can only create updates for your own shop");
+    };
+
+    let shop = switch (shops.get(shopId)) {
+      case (null) {
+        Runtime.trap("Shop not found with given ID");
+      };
+      case (?validShop) { validShop };
+    };
+
+    let updateId = (shopUpdates.size() + 1).toText();
+    let timestamp = Time.now();
+
+    let newShopUpdate : ShopUpdate = {
+      shopId;
+      title;
+      description;
+      image;
+      expiryDate;
+      timestamp;
+      shopLocation = {
+        latitude = shop.latitude;
+        longitude = shop.longitude;
+        timestamp;
+      };
+    };
+
+    shopUpdates.add(updateId, newShopUpdate);
+    updateId;
+  };
+
+  public query ({ caller }) func getShopUpdate(updateId : Text) : async ?ShopUpdate {
+    shopUpdates.get(updateId);
+  };
+
+  public query ({ caller }) func getAllShopUpdatesForShop(shopId : Principal) : async [ShopUpdate] {
+    let filtered : [?ShopUpdate] = shopUpdates.values().toArray().map(
+      func(su) {
+        if (su.shopId == shopId) { ?su } else { null };
+      }
+    );
+
+    filtered.filter(func(x) { x != null }).map(
+      func(x) { switch (x) { case (?v) { v }; case (null) { Runtime.trap("Unexpected null in filtered array") } } }
+    );
+  };
+
+  public query ({ caller }) func getAllActiveShopUpdates() : async [ShopUpdate] {
+    let currentTime = Time.now();
+    let filtered = shopUpdates.values().toArray().filter(
+      func(su) { currentTime <= su.expiryDate }
+    );
+    filtered;
+  };
+
+  public shared ({ caller }) func updateShopUpdate(
+    updateId : Text,
+    title : Text,
+    description : ?Text,
+    image : ?Storage.ExternalBlob,
+    expiryDate : Time.Time,
+  ) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only shop owners can update posts");
+    };
+
+    switch (shopUpdates.get(updateId)) {
+      case (null) { Runtime.trap("ShopUpdate not found.") };
+      case (?update) {
+        // Verify ownership: caller must own the shop this update belongs to
+        if (caller != update.shopId and not AccessControl.isAdmin(accessControlState, caller)) {
+          Runtime.trap("Unauthorized: Can only update your own shop's posts");
+        };
+        updateShopUpdateInternal(updateId, update, title, description, image, expiryDate);
+      };
+    };
+  };
+
+  func updateShopUpdateInternal(
+    updateId : Text,
+    originalUpdate : ShopUpdate,
+    title : Text,
+    description : ?Text,
+    image : ?Storage.ExternalBlob,
+    expiryDate : Time.Time,
+  ) {
+    let newUpdate : ShopUpdate = {
+      originalUpdate with
+      title;
+      description;
+      image;
+      expiryDate;
+      timestamp = Time.now();
+    };
+
+    shopUpdates.add(updateId, newUpdate);
+  };
+
+  public shared ({ caller }) func deleteShopUpdate(updateId : Text) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only shop owners can delete posts");
+    };
+
+    switch (shopUpdates.get(updateId)) {
+      case (null) { Runtime.trap("ShopUpdate not found.") };
+      case (?update) {
+        // Verify ownership: caller must own the shop this update belongs to
+        if (caller != update.shopId and not AccessControl.isAdmin(accessControlState, caller)) {
+          Runtime.trap("Unauthorized: Can only delete your own shop's posts");
+        };
+        shopUpdates.remove(updateId);
+      };
+    };
+  };
+  // matches previous (old) state no migration needed :D
 };

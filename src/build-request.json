@@ -1,77 +1,148 @@
 {
   "kind": "build_request",
-  "title": "Implement the requested Shop Dashboard UI (Post Update, Open/Closed toggle, Active/Expired posts sections)",
+  "title": "Implement Shop Owner Post Update creation + persistence (ShopUpdates) with expiry and optional image",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-18",
-      "text": "Update the Shop Dashboard page to match the requested simple layout by adding: (1) a primary button labeled \"Post Update\", (2) a toggle control to mark the shop as \"Open\" or \"Closed\", (3) a section titled \"My Active Posts\", and (4) a section titled \"Expired Posts\".",
-      "target": "frontend",
+      "id": "REQ-21",
+      "text": "Add backend support for a new \"ShopUpdates\" collection that persists shop owner posts with the following fields: Shop ID, Title, Description (optional), Image (optional), Expiry Date, Timestamp, and Shop Location (latitude, longitude).",
+      "target": "backend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "Create Shop Dashboard with:\n\n1. Button: \"Post Update\"\n2. Toggle Button: Mark Shop Open / Closed\n3. Section: My Active Posts\n4. Section: Expired Posts\n\nKeep layout simple and easy to use."
+          "Save posts in \"ShopUpdates\" collection with:\n- Shop ID\n- Title\n- Description\n- Image\n- Expiry Date\n- Timestamp\n- Shop Location (lat, long)"
         ]
       },
       "acceptanceCriteria": [
-        "On route /shop-dashboard, the page shows a visible \"Post Update\" button.",
-        "On route /shop-dashboard, the page shows a toggle control with clear states \"Open\" and \"Closed\" (English text).",
-        "On route /shop-dashboard, the page shows a section labeled \"My Active Posts\".",
-        "On route /shop-dashboard, the page shows a section labeled \"Expired Posts\".",
-        "The overall layout is mobile-first, uncluttered, and easy to scan (simple vertical stacking, consistent spacing)."
+        "A new Motoko type exists representing a Shop Update record with: shopId, title, optional description, optional image, expiryDate, createdAt timestamp, and shopLocation (lat/long).",
+        "Shop updates are stored in canister state (in-memory Map/Array is acceptable per current code patterns) in a way that supports listing a shop owner's updates later.",
+        "All write methods enforce that the caller is an authenticated user (using the existing AccessControl permission checks already used by profile/shop APIs)."
       ]
     },
     {
-      "id": "REQ-19",
-      "text": "Ensure the Shop Dashboard still supports the existing shop registration/edit entrypoint: when the caller has no shop record, show a clear CTA to register; when a shop exists, allow navigating to the shop registration page to edit.",
-      "target": "frontend",
+      "id": "REQ-22",
+      "text": "Implement backend APIs to create and fetch ShopUpdates for the current shop owner, ensuring each created update automatically attaches the shop’s registered location (latitude/longitude) to the post.",
+      "target": "backend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "Step 3: Shop Dashboard"
+          "Automatically attach shop location to each post."
         ]
       },
       "acceptanceCriteria": [
-        "If no shop is returned for the current caller, the dashboard shows a clear register CTA that navigates to /shop-registration.",
-        "If a shop is returned for the current caller, the dashboard shows an edit action that navigates to /shop-registration.",
-        "These registration/edit controls do not conflict with or hide the required \"Post Update\", \"Open/Closed\" toggle, and the two posts sections."
+        "There is a backend method that creates a ShopUpdate for the caller and returns the created record.",
+        "If the caller has no registered shop, creating a ShopUpdate fails with a clear error message (trap).",
+        "On create, the shopLocation saved on the update equals the latitude/longitude stored on the caller’s Shop record (not the client-provided coordinates).",
+        "There is at least one backend query method to fetch the caller’s ShopUpdates (for rendering \"My Active Posts\" and \"Expired Posts\" in the UI).",
+        "The backend can distinguish active vs expired updates based on Expiry Date relative to now (either via separate queries or via a single query with a filter option)."
       ]
     },
     {
-      "id": "REQ-20",
-      "text": "For \"My Active Posts\" and \"Expired Posts\" sections, implement simple empty states (English text) when there are no items, without adding backend persistence yet.",
+      "id": "REQ-23",
+      "text": "Create a Shop Owner \"Post Update\" UI flow: when the Shop Owner taps \"Post Update\" from the Shop Dashboard, navigate to a new page containing a form with fields Title (short text), Description (optional), Optional Image upload (with preview), and Expiry option (Today / 2 Days / Custom Date).",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "Section: My Active Posts\n4. Section: Expired Posts"
+          "When Shop Owner clicks \"Post Update\", open a form with:\n\n- Title (short text)\n- Description (optional)\n- Optional Image upload\n- Expiry option (Today / 2 Days / Custom Date)"
         ]
       },
       "acceptanceCriteria": [
-        "If there are no active posts to display, \"My Active Posts\" shows an empty-state message in English (e.g., \"No active posts yet\").",
-        "If there are no expired posts to display, \"Expired Posts\" shows an empty-state message in English (e.g., \"No expired posts\").",
-        "No backend APIs, state schema, or persistence are introduced for posts as part of this change."
+        "A new route/page exists for creating a Shop Update and is only accessible within the authenticated/protected app shell (consistent with existing protected routes).",
+        "The form validates that Title is required and is short (client-side constraint with a clear English error message).",
+        "Description is optional.",
+        "Image upload is optional and provides an in-page preview when selected.",
+        "Expiry option UI offers exactly: Today, 2 Days, and Custom Date (date picker).",
+        "All user-facing text is English."
+      ]
+    },
+    {
+      "id": "REQ-24",
+      "text": "Wire the Post Update form to backend APIs using React Query: on submit, create a ShopUpdate, show loading state, show a success confirmation in English, and navigate back to the Shop Dashboard (or otherwise reset the form) after success.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Save posts in \"ShopUpdates\" collection..."
+        ]
+      },
+      "acceptanceCriteria": [
+        "A new React Query mutation exists for creating a ShopUpdate.",
+        "While submitting, the submit button is disabled and a visible loading state is shown.",
+        "On backend error, the UI shows a clear English error message and does not navigate away.",
+        "On success, the UI shows a clear English success message and then returns the user to the Shop Dashboard (or clears the form for another post) without breaking auth/session state.",
+        "After success, any cached ShopUpdates list queries used by the dashboard are invalidated/refetched so the new post appears."
+      ]
+    },
+    {
+      "id": "REQ-25",
+      "text": "Update the Shop Dashboard to display real data in \"My Active Posts\" and \"Expired Posts\" sections by fetching ShopUpdates for the caller; keep the existing English empty states when there are no items.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "My Active Posts\n\nExpired Posts"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The Shop Dashboard fetches the caller’s ShopUpdates and splits them into Active vs Expired based on Expiry Date.",
+        "When updates exist, each section renders a simple list of posts showing at minimum: Title and Expiry Date; if an image exists, show a small thumbnail/preview.",
+        "When no updates exist for a section, the existing English empty state remains visible.",
+        "The existing behavior that disables \"Post Update\" when the owner has no shop remains intact."
+      ]
+    },
+    {
+      "id": "REQ-26",
+      "text": "Ensure Expiry Date selection is correctly converted to a backend timestamp: Today (end of day or within same day), 2 Days (now + 2 days), and Custom Date (user-selected date).",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Expiry option (Today / 2 Days / Custom Date)"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Selecting Today results in an expiryDate that is on the current calendar day (implementation-defined exact time, but must not be in the past).",
+        "Selecting 2 Days results in an expiryDate approximately 48 hours in the future (must be later than now).",
+        "Selecting Custom Date requires a date to be chosen; the form cannot submit without it when Custom Date is selected.",
+        "The backend stores expiryDate in a consistent timestamp format (Time.Time) and uses it for active/expired classification."
       ]
     }
   ],
   "constraints": [
-    "Use English for all user-facing text.",
-    "Do not edit files under frontend/src/components/ui (compose existing UI components instead).",
-    "Keep the backend as a single Motoko actor in backend/main.mo; do not introduce additional backend services."
+    "Backend must remain a single Motoko actor with all logic in backend/main.mo (no additional backend services).",
+    "Do not edit frontend immutable paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui.",
+    "Use English for all user-facing UI text and error messages."
   ],
   "nonGoals": [
-    "Implementing actual post creation, storage, expiration logic, or a posts feed backed by the canister.",
-    "Persisting the Open/Closed state to the backend (unless separately requested later).",
-    "Adding product catalog, inventory management, or analytics features beyond the requested Shop Dashboard elements."
+    "Implementing customer-side feed consumption of ShopUpdates (beyond shop owner dashboard display).",
+    "Adding push notifications, real-time updates, or WebSockets.",
+    "Integrating external image hosting/CDNs or external databases."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

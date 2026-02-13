@@ -1,14 +1,15 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 15,
-  "summary": "LocalBuzz mobile app with OTP login for Shop Owners and Customers, role selection after login, routing to Shop Dashboard or Customer Home Feed, clean UI, location permission, and a Shop Owner registration flow that creates a Shop record linked to the owner user ID.",
+  "projectStateVersion": 17,
+  "summary": "LocalBuzz mobile app with OTP login for Shop Owners and Customers, role selection after login, routing to Shop Dashboard or Customer Home Feed, clean UI, location permission, a Shop Owner registration flow that creates a Shop record linked to the owner user ID, and a Shop Owner 'Post Update' feature that creates expiring shop updates with optional image and attached shop location stored in a ShopUpdates collection.",
   "architectural_notes": [
     "Two user roles: Shop Owner and Customer.",
     "Authentication via mobile OTP for all users.",
     "After OTP login, user selects role and is routed accordingly (Shop Dashboard or Customer Home Feed).",
     "App requires location permission.",
     "Phone number input/OTP login should default to India country code (+91).",
-    "Add a 'Shops' data model/table/collection to store Shop Owner registration details (shop name, category, address, latitude/longitude, image URL/path) and link each shop record to the owning user ID."
+    "Add a 'Shops' data model/table/collection to store Shop Owner registration details (shop name, category, address, latitude/longitude, image URL/path) and link each shop record to the owning user ID.",
+    "Add a 'ShopUpdates' data model/table/collection storing shop updates: shopId, title, optional description, optional image URL/path, expiryDate, created timestamp, and shop location (lat/long) auto-attached to each post."
   ],
   "known_issues": [
     "OTP login phone number country code is incorrect; should be India (+91).",
@@ -16,7 +17,7 @@
     "Location permission is being denied (location access request/handling is not working as expected).",
     "App generation/build failed when attempting to create the Shop Dashboard (needs retry/fix)."
   ],
-  "isFixRequest": true,
+  "isFixRequest": false,
   "existing_features": [
     {
       "id": "feature-create-the-basic-localbuzz-app-structure-with-mobile-first-navigation-and-three-primary-flows-screens-1-login-2-role-selection-shop-owner-vs-customer-and-3-post-login-destinations-shop-dashboard-and-customer-home-feed",
@@ -161,6 +162,38 @@
         "REQ-20"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-create-a-shop-owner-post-update-ui-flow-when-the-shop-owner-taps-post-update-from-the-shop-dashboard-navigate-to-a-new-page-containing-a-form-with-fields-title-short-text-description-optional-optional-image-upload-with-preview-and-expiry-option-today-2-days-custom-date",
+      "title": "Create a Shop Owner \"Post Update\" UI flow: when the Shop Owner taps \"Post Update\" from the Shop Dashboard, navigate to a new page containing a form with fields Title (short text), Description (optional), Optional Image upload (with preview), and Expiry option (Today / 2 Days / Custom Date).",
+      "reqIds": [
+        "REQ-23"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-wire-the-post-update-form-to-backend-apis-using-react-query-on-submit-create-a-shopupdate-show-loading-state-show-a-success-confirmation-in-english-and-navigate-back-to-the-shop-dashboard-or-otherwise-reset-the-form-after-success",
+      "title": "Wire the Post Update form to backend APIs using React Query: on submit, create a ShopUpdate, show loading state, show a success confirmation in English, and navigate back to the Shop Dashboard (or otherwise reset the form) after success.",
+      "reqIds": [
+        "REQ-24"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-shop-dashboard-to-display-real-data-in-my-active-posts-and-expired-posts-sections-by-fetching-shopupdates-for-the-caller-keep-the-existing-english-empty-states-when-there-are-no-items",
+      "title": "Update the Shop Dashboard to display real data in \"My Active Posts\" and \"Expired Posts\" sections by fetching ShopUpdates for the caller; keep the existing English empty states when there are no items.",
+      "reqIds": [
+        "REQ-25"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-expiry-date-selection-is-correctly-converted-to-a-backend-timestamp-today-end-of-day-or-within-same-day-2-days-now-2-days-and-custom-date-user-selected-date",
+      "title": "Ensure Expiry Date selection is correctly converted to a backend timestamp: Today (end of day or within same day), 2 Days (now + 2 days), and Custom Date (user-selected date).",
+      "reqIds": [
+        "REQ-26"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -220,6 +253,28 @@
       "id": "AR-11",
       "summary": "Create Shop Dashboard UI with Post Update button, Open/Closed toggle, My Active Posts section, and Expired Posts section (simple layout)",
       "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-12",
+      "summary": "Implement Shop Owner 'Post Update' flow: open a form (title, optional description, optional image, expiry Today/2 Days/Custom Date), auto-attach shop location, and save to a ShopUpdates collection with shopId, fields, expiry date, timestamp, and lat/long.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-13",
+      "summary": "Add backend support for a new \"ShopUpdates\" collection that persists shop owner posts with the following fields: Shop ID, Title, Description (optional), Image (optional), Expiry Date, Timestamp, and Shop Location (latitude, longitude).",
+      "reqIds": [
+        "REQ-21"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-14",
+      "summary": "Implement backend APIs to create and fetch ShopUpdates for the current shop owner, ensuring each created update automatically attaches the shop’s registered location (latitude/longitude) to the post.",
+      "reqIds": [
+        "REQ-22"
+      ],
       "status": "pending"
     }
   ],

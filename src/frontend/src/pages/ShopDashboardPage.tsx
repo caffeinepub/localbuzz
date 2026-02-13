@@ -1,14 +1,17 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Store, Plus, Edit } from 'lucide-react';
+import { Store, Plus, Edit, Calendar, Image as ImageIcon } from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';
 import { useGetCallerShop } from '../hooks/useShop';
+import { useGetShopUpdates } from '../hooks/useShopUpdates';
 import ShopOpenClosedToggle from '../components/ShopOpenClosedToggle';
+import { isActive, formatTime } from '../utils/time';
 
 export default function ShopDashboardPage() {
   const navigate = useNavigate();
   const { data: shop, isLoading: shopLoading } = useGetCallerShop();
+  const { data: updates, isLoading: updatesLoading } = useGetShopUpdates();
   const [isShopOpen, setIsShopOpen] = useState(true);
 
   const handleRegisterShop = () => {
@@ -16,11 +19,14 @@ export default function ShopDashboardPage() {
   };
 
   const handlePostUpdate = () => {
-    // TODO: Navigate to post creation page when implemented
-    console.log('Post Update clicked');
+    navigate({ to: '/shop-post-update' });
   };
 
   const hasShop = !shopLoading && !!shop;
+
+  // Split updates into active and expired
+  const activeUpdates = updates?.filter((update) => isActive(update.expiryDate)) || [];
+  const expiredUpdates = updates?.filter((update) => !isActive(update.expiryDate)) || [];
 
   return (
     <div className="space-y-6">
@@ -121,10 +127,51 @@ export default function ShopDashboardPage() {
           <CardDescription>Updates currently visible to customers</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            <p>No active posts yet</p>
-            <p className="text-sm mt-1">Click "Post Update" to create your first post</p>
-          </div>
+          {updatesLoading ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>Loading updates...</p>
+            </div>
+          ) : activeUpdates.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>No active posts yet</p>
+              <p className="text-sm mt-1">Click "Post Update" to create your first post</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {activeUpdates.map((update, index) => (
+                <div
+                  key={index}
+                  className="p-4 rounded-lg border bg-card hover:bg-accent/5 transition-colors"
+                >
+                  <div className="flex gap-3">
+                    {update.image && (
+                      <div className="flex-shrink-0 w-20 h-20 rounded-md overflow-hidden bg-muted">
+                        <img
+                          src={update.image.getDirectURL()}
+                          alt={update.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-foreground truncate">{update.title}</h3>
+                      {update.description && (
+                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                          {update.description}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          Expires: {formatTime(update.expiryDate)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -135,9 +182,50 @@ export default function ShopDashboardPage() {
           <CardDescription>Past updates no longer visible to customers</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            <p>No expired posts</p>
-          </div>
+          {updatesLoading ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>Loading updates...</p>
+            </div>
+          ) : expiredUpdates.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>No expired posts</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {expiredUpdates.map((update, index) => (
+                <div
+                  key={index}
+                  className="p-4 rounded-lg border bg-muted/30 opacity-75"
+                >
+                  <div className="flex gap-3">
+                    {update.image && (
+                      <div className="flex-shrink-0 w-20 h-20 rounded-md overflow-hidden bg-muted">
+                        <img
+                          src={update.image.getDirectURL()}
+                          alt={update.title}
+                          className="w-full h-full object-cover grayscale"
+                        />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-foreground truncate">{update.title}</h3>
+                      {update.description && (
+                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                          {update.description}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          Expired: {formatTime(update.expiryDate)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
