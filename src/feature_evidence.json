@@ -2,11 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-create-a-shop-owner-post-update-ui-flow-when-the-shop-owner-taps-post-update-from-the-shop-dashboard-navigate-to-a-new-page-containing-a-form-with-fields-title-short-text-description-optional-optional-image-upload-with-preview-and-expiry-option-today-2-days-custom-date",
-      "featureTitle": "Create a Shop Owner \"Post Update\" UI flow: when the Shop Owner taps \"Post Update\" from the Shop Dashboard, navigate to a new page containing a form with fields Title (short text), Description (optional), Optional Image upload (with preview), and Expiry option (Today / 2 Days / Custom Date).",
+      "featureId": "feature-fix-the-role-selection-page-so-tapping-clicking-continue-as-shop-owner-or-continue-as-customer-always-performs-a-visible-action-and-navigates-to-the-correct-route-shop-dashboard-or-customer-home-instead-of-appearing-to-do-nothing",
+      "featureTitle": "Fix the Role Selection page so tapping/clicking \"Continue as Shop Owner\" or \"Continue as Customer\" always performs a visible action and navigates to the correct route (/shop-dashboard or /customer-home) instead of appearing to do nothing.",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/pages/ShopPostUpdatePage.tsx"
+        "frontend/src/pages/RoleSelectionPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -18,16 +17,15 @@
         "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-23"
+        "REQ-36"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-wire-the-post-update-form-to-backend-apis-using-react-query-on-submit-create-a-shopupdate-show-loading-state-show-a-success-confirmation-in-english-and-navigate-back-to-the-shop-dashboard-or-otherwise-reset-the-form-after-success",
-      "featureTitle": "Wire the Post Update form to backend APIs using React Query: on submit, create a ShopUpdate, show loading state, show a success confirmation in English, and navigate back to the Shop Dashboard (or otherwise reset the form) after success.",
+      "featureId": "feature-add-robust-handling-on-the-role-selection-page-for-missing-otp-session-phone-number-localstorage-cleared-etc-show-an-english-message-explaining-the-session-is-incomplete-and-route-the-user-back-to-the-login-page-to-re-verify-otp",
+      "featureTitle": "Add robust handling on the Role Selection page for missing OTP session phone number (localStorage cleared, etc.): show an English message explaining the session is incomplete and route the user back to the login page to re-verify OTP.",
       "files": [
-        "frontend/src/hooks/useShopUpdates.ts",
-        "frontend/src/pages/ShopPostUpdatePage.tsx"
+        "frontend/src/pages/RoleSelectionPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -39,15 +37,15 @@
         "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-24"
+        "REQ-37"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-update-the-shop-dashboard-to-display-real-data-in-my-active-posts-and-expired-posts-sections-by-fetching-shopupdates-for-the-caller-keep-the-existing-english-empty-states-when-there-are-no-items",
-      "featureTitle": "Update the Shop Dashboard to display real data in \"My Active Posts\" and \"Expired Posts\" sections by fetching ShopUpdates for the caller; keep the existing English empty states when there are no items.",
+      "featureId": "feature-ensure-role-selection-does-not-block-navigation-on-a-backend-profile-save-failure-if-saving-the-profile-fails-still-route-the-user-to-the-selected-destination-and-show-an-english-non-blocking-warning-that-profile-sync-failed-and-can-be-retried-later",
+      "featureTitle": "Ensure Role Selection does not block navigation on a backend profile-save failure: if saving the profile fails, still route the user to the selected destination and show an English non-blocking warning that profile sync failed and can be retried later.",
       "files": [
-        "frontend/src/pages/ShopDashboardPage.tsx"
+        "frontend/src/pages/RoleSelectionPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -59,17 +57,16 @@
         "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-25"
+        "REQ-38"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-ensure-expiry-date-selection-is-correctly-converted-to-a-backend-timestamp-today-end-of-day-or-within-same-day-2-days-now-2-days-and-custom-date-user-selected-date",
-      "featureTitle": "Ensure Expiry Date selection is correctly converted to a backend timestamp: Today (end of day or within same day), 2 Days (now + 2 days), and Custom Date (user-selected date).",
+      "featureId": "feature-fix-the-role-selection-auto-redirect-logic-so-it-does-not-incorrectly-force-users-to-customer-home-on-load-regardless-of-their-intent-only-auto-redirect-when-a-previously-chosen-role-is-unambiguous-otherwise-keep-the-user-on-the-role-selection-screen",
+      "featureTitle": "Fix the Role Selection auto-redirect logic so it does not incorrectly force users to /customer-home on load regardless of their intent; only auto-redirect when a previously chosen role is unambiguous, otherwise keep the user on the Role Selection screen.",
       "files": [
-        "frontend/src/pages/ShopDashboardPage.tsx",
-        "frontend/src/pages/ShopPostUpdatePage.tsx",
-        "frontend/src/utils/time.ts"
+        "frontend/src/components/MobileAppShell.tsx",
+        "frontend/src/pages/RoleSelectionPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -81,7 +78,7 @@
         "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-26"
+        "REQ-39"
       ],
       "confidence": "high"
     }

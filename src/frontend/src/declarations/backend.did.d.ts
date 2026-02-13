@@ -11,6 +11,18 @@ import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
 export type ExternalBlob = Uint8Array;
+export interface FeedShopUpdate {
+  'title' : string,
+  'shopCategory' : string,
+  'shopId' : Principal,
+  'expiryDate' : Time,
+  'shopLocation' : Location,
+  'description' : [] | [string],
+  'updateId' : string,
+  'timestamp' : Time,
+  'shopName' : string,
+  'image' : [] | [ExternalBlob],
+}
 export interface Location {
   'latitude' : number,
   'longitude' : number,
@@ -87,6 +99,7 @@ export interface _SERVICE {
   'getAllShops' : ActorMethod<[], Array<Shop>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
+  'getCustomerHomeFeed' : ActorMethod<[], Array<FeedShopUpdate>>,
   'getLastKnownLocation' : ActorMethod<[], [] | [Location]>,
   'getOtpChallenge' : ActorMethod<[string], string>,
   'getShop' : ActorMethod<[Principal], [] | [Shop]>,

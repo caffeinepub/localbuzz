@@ -1,96 +1,78 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Shop Owner: Create and view ShopUpdates with expiry + optional image (frontend)",
+  "title": "Fix Role Selection navigation, session handling, and redirect logic",
   "requirements": [
     {
-      "id": "REQ-23",
-      "summary": "Add a protected \"Post Update\" page with a validated form (title, optional description, optional image preview, and expiry selection).",
+      "id": "REQ-36",
+      "summary": "Make Role Selection buttons reliably navigate with visible loading state, duplicate-tap prevention, and user-visible error handling.",
       "acceptanceCriteria": [
-        "A new route/page exists for creating a Shop Update and is only accessible within the authenticated/protected app shell (consistent with existing protected routes).",
-        "The form validates that Title is required and is short (client-side constraint with a clear English error message).",
-        "Description is optional.",
-        "Image upload is optional and provides an in-page preview when selected.",
-        "Expiry option UI offers exactly: Today, 2 Days, and Custom Date (date picker).",
-        "All user-facing text is English."
+        "From /role-selection, clicking \"Continue as Shop Owner\" navigates to /shop-dashboard.",
+        "From /role-selection, clicking \"Continue as Customer\" navigates to /customer-home.",
+        "While the selection is being processed, the selected button shows a loading state and repeated taps do not trigger duplicate actions.",
+        "If navigation cannot proceed for any reason, show an English, user-visible error message (not only console logging)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/ShopPostUpdatePage.tsx",
-          "operation": "create",
-          "description": "Create the new protected Shop Owner \"Post Update\" page containing a form for Title (required, short), optional Description, optional Image upload with preview (use the blob-storage ExternalBlob workflow for image representation; Verify the component's usage instructions before implementing.), and an Expiry selector offering exactly Today / 2 Days / Custom Date (date input). Ensure all user-facing strings are English."
-        },
-        {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/pages/RoleSelectionPage.tsx",
           "operation": "modify",
-          "description": "Register the new /shop-post-update route and wrap it with the existing ProtectedRoute so it is only accessible inside the authenticated/protected app shell. Ensure the new page is reachable via in-app navigation (no orphan page)."
+          "description": "Refactor role selection click handlers to (1) set an explicit per-button \"processing\" state, (2) guard against duplicate selections while processing, (3) ensure navigation is always invoked for the chosen role when allowed, and (4) show an English in-page error message when a click cannot proceed (instead of only console logging). Also ensure Card click and Button click share the same guarded handler so the UI always produces a visible result."
         }
       ]
     },
     {
-      "id": "REQ-24",
-      "summary": "Wire Post Update submission to the backend via React Query mutation with loading, error, success confirmation, navigation back, and cache invalidation.",
+      "id": "REQ-37",
+      "summary": "Handle missing OTP-session phone number on role selection by showing an English session-expired message and routing back to login.",
       "acceptanceCriteria": [
-        "A new React Query mutation exists for creating a ShopUpdate.",
-        "While submitting, the submit button is disabled and a visible loading state is shown.",
-        "On backend error, the UI shows a clear English error message and does not navigate away.",
-        "On success, the UI shows a clear English success message and then returns the user to the Shop Dashboard (or clears the form for another post) without breaking auth/session state.",
-        "After success, any cached ShopUpdates list queries used by the dashboard are invalidated/refetched so the new post appears."
+        "If the user taps a role and the OTP phone number is missing, the UI shows an English error (e.g., \"Your session expired. Please log in again.\") and navigates to /.",
+        "The app does not silently fail with only console errors in this case."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useShopUpdates.ts",
-          "operation": "create",
-          "description": "Add React Query hooks for ShopUpdates: a createShopUpdate mutation that calls the backend capability to create an update using the caller’s current shopId, plus list query hooks used by the dashboard. On mutation success, invalidate/refetch the relevant ShopUpdates query cache keys so the dashboard reflects the new post. (Use blob-storage ExternalBlob for optional image upload payload handling; Verify the component's usage instructions before implementing.)"
+          "path": "frontend/src/pages/RoleSelectionPage.tsx",
+          "operation": "modify",
+          "description": "On role tap, detect missing OTP session phone number and immediately show an English error message (e.g., session expired/incomplete). Then route the user to the login route (/). Ensure this path is user-visible (rendered message) and does not rely on console errors."
         },
         {
-          "path": "frontend/src/pages/ShopPostUpdatePage.tsx",
+          "path": "frontend/src/hooks/useOtpSession.ts",
           "operation": "modify",
-          "description": "Connect the form submit to the new React Query mutation. Show a disabled submit button and a visible loading indicator while pending; show clear English error text on failure and stay on the page; show a clear English success confirmation on success and then navigate back to the Shop Dashboard (or reset the form) while preserving the auth/session state."
+          "description": "Add/adjust a helper to fully clear OTP session state in a way that Role Selection can invoke when it detects missing/incomplete session (e.g., ensure both verified flag and phone number are cleared consistently), so the app reliably returns to the login flow."
         }
       ]
     },
     {
-      "id": "REQ-25",
-      "summary": "Update the Shop Dashboard to fetch and render real ShopUpdates as Active vs Expired, preserving existing English empty states.",
+      "id": "REQ-38",
+      "summary": "Do not block navigation if saving the user profile fails; navigate anyway and show a non-blocking English warning.",
       "acceptanceCriteria": [
-        "The Shop Dashboard fetches the caller’s ShopUpdates and splits them into Active vs Expired based on Expiry Date.",
-        "When updates exist, each section renders a simple list of posts showing at minimum: Title and Expiry Date; if an image exists, show a small thumbnail/preview.",
-        "When no updates exist for a section, the existing English empty state remains visible.",
-        "The existing behavior that disables \"Post Update\" when the owner has no shop remains intact."
+        "If saveCallerUserProfile fails (trap/network/actor unavailable), the app still navigates to the selected route.",
+        "An English warning message is shown indicating the profile could not be saved.",
+        "The role selection buttons remain usable after a failure (no permanent disabled state)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/ShopDashboardPage.tsx",
+          "path": "frontend/src/pages/RoleSelectionPage.tsx",
           "operation": "modify",
-          "description": "Wire the existing \"Post Update\" button to navigate to /shop-post-update while keeping the current disable behavior when the owner has no shop. Fetch the caller’s ShopUpdates using the new useShopUpdates hook(s), split them into Active vs Expired based on expiryDate relative to now, and render lists showing Title + Expiry Date, plus an image thumbnail when present (use blob-storage ExternalBlob.getDirectURL(); Verify the component's usage instructions before implementing.). Preserve the existing English empty-state content when a section has zero items."
+          "description": "Change the save+navigate flow so that a save failure does not prevent routing: catch save errors, show an English non-blocking warning (rendered in the page), reset any processing/disabled state, and still navigate to the chosen destination route. Ensure repeated use remains possible after failures."
         }
       ]
     },
     {
-      "id": "REQ-26",
-      "summary": "Implement consistent client-side expiry timestamp conversion for Today / 2 Days / Custom Date and enforce Custom Date selection before submit.",
+      "id": "REQ-39",
+      "summary": "Fix Role Selection auto-redirect so it only redirects when a previously chosen role is unambiguous; otherwise remain on Role Selection.",
       "acceptanceCriteria": [
-        "Selecting Today results in an expiryDate that is on the current calendar day (implementation-defined exact time, but must not be in the past).",
-        "Selecting 2 Days results in an expiryDate approximately 48 hours in the future (must be later than now).",
-        "Selecting Custom Date requires a date to be chosen; the form cannot submit without it when Custom Date is selected.",
-        "The backend stores expiryDate in a consistent timestamp format (Time.Time) and uses it for active/expired classification."
+        "Opening /role-selection does not immediately redirect the user away unless the app can confidently determine the user’s role selection state.",
+        "The Role Selection screen remains reachable after login when role is not clearly set."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/utils/time.ts",
-          "operation": "create",
-          "description": "Add utilities to convert JavaScript dates/options into the backend Time.Time bigint format used by the app (e.g., helpers for: end-of-today (not in the past), now + ~48h, and a chosen calendar date). Include helpers for comparing backend Time.Time values to \"now\" for active/expired classification."
+          "path": "frontend/src/pages/RoleSelectionPage.tsx",
+          "operation": "modify",
+          "description": "Replace the current unconditional auto-redirect-to-customer logic with an unambiguous check (e.g., a persisted role choice in browser storage set when the user previously selected a role). Only auto-navigate when that persisted choice is present and valid; otherwise render the Role Selection screen without redirecting."
         },
         {
-          "path": "frontend/src/pages/ShopPostUpdatePage.tsx",
+          "path": "frontend/src/components/MobileAppShell.tsx",
           "operation": "modify",
-          "description": "Use the new time utilities to compute expiryDate based on the selected option. Enforce that Custom Date requires a chosen date and block submission with a clear English validation error when missing. Ensure Today and 2 Days always compute an expiryDate later than now."
-        },
-        {
-          "path": "frontend/src/pages/ShopDashboardPage.tsx",
-          "operation": "modify",
-          "description": "Use the shared time utilities when splitting updates into Active vs Expired to ensure consistent classification logic with the timestamps produced by the Post Update form."
+          "description": "On logout, also clear any persisted role-selection hint used for Role Selection auto-redirect, to prevent incorrect redirects for subsequent sessions and to keep /role-selection reachable when role is not clearly set."
         }
       ]
     }

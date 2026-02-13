@@ -19,6 +19,18 @@ export interface Location {
     longitude: number;
     timestamp: Time;
 }
+export interface FeedShopUpdate {
+    title: string;
+    shopCategory: string;
+    shopId: Principal;
+    expiryDate: Time;
+    shopLocation: Location;
+    description?: string;
+    updateId: string;
+    timestamp: Time;
+    shopName: string;
+    image?: ExternalBlob;
+}
 export type Time = bigint;
 export interface Shop {
     latitude: number;
@@ -62,6 +74,7 @@ export interface backendInterface {
     getAllShops(): Promise<Array<Shop>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
+    getCustomerHomeFeed(): Promise<Array<FeedShopUpdate>>;
     getLastKnownLocation(): Promise<Location | null>;
     getOtpChallenge(phoneNumber: string): Promise<string>;
     getShop(owner: Principal): Promise<Shop | null>;

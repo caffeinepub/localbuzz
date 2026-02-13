@@ -1,148 +1,92 @@
 {
   "kind": "build_request",
-  "title": "Implement Shop Owner Post Update creation + persistence (ShopUpdates) with expiry and optional image",
-  "priority": "normal",
+  "title": "Fix Role Selection buttons not navigating (Continue as Shop Owner / Continue as Customer)",
+  "priority": "high",
   "requirements": [
     {
-      "id": "REQ-21",
-      "text": "Add backend support for a new \"ShopUpdates\" collection that persists shop owner posts with the following fields: Shop ID, Title, Description (optional), Image (optional), Expiry Date, Timestamp, and Shop Location (latitude, longitude).",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "Save posts in \"ShopUpdates\" collection with:\n- Shop ID\n- Title\n- Description\n- Image\n- Expiry Date\n- Timestamp\n- Shop Location (lat, long)"
-        ]
-      },
-      "acceptanceCriteria": [
-        "A new Motoko type exists representing a Shop Update record with: shopId, title, optional description, optional image, expiryDate, createdAt timestamp, and shopLocation (lat/long).",
-        "Shop updates are stored in canister state (in-memory Map/Array is acceptable per current code patterns) in a way that supports listing a shop owner's updates later.",
-        "All write methods enforce that the caller is an authenticated user (using the existing AccessControl permission checks already used by profile/shop APIs)."
-      ]
-    },
-    {
-      "id": "REQ-22",
-      "text": "Implement backend APIs to create and fetch ShopUpdates for the current shop owner, ensuring each created update automatically attaches the shop’s registered location (latitude/longitude) to the post.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "Automatically attach shop location to each post."
-        ]
-      },
-      "acceptanceCriteria": [
-        "There is a backend method that creates a ShopUpdate for the caller and returns the created record.",
-        "If the caller has no registered shop, creating a ShopUpdate fails with a clear error message (trap).",
-        "On create, the shopLocation saved on the update equals the latitude/longitude stored on the caller’s Shop record (not the client-provided coordinates).",
-        "There is at least one backend query method to fetch the caller’s ShopUpdates (for rendering \"My Active Posts\" and \"Expired Posts\" in the UI).",
-        "The backend can distinguish active vs expired updates based on Expiry Date relative to now (either via separate queries or via a single query with a filter option)."
-      ]
-    },
-    {
-      "id": "REQ-23",
-      "text": "Create a Shop Owner \"Post Update\" UI flow: when the Shop Owner taps \"Post Update\" from the Shop Dashboard, navigate to a new page containing a form with fields Title (short text), Description (optional), Optional Image upload (with preview), and Expiry option (Today / 2 Days / Custom Date).",
+      "id": "REQ-36",
+      "text": "Fix the Role Selection page so tapping/clicking \"Continue as Shop Owner\" or \"Continue as Customer\" always performs a visible action and navigates to the correct route (/shop-dashboard or /customer-home) instead of appearing to do nothing.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "recent-messages-user-1"
         ],
         "quotes": [
-          "When Shop Owner clicks \"Post Update\", open a form with:\n\n- Title (short text)\n- Description (optional)\n- Optional Image upload\n- Expiry option (Today / 2 Days / Custom Date)"
+          "Either Continue as shop owner or continue as customer is not opening."
         ]
       },
       "acceptanceCriteria": [
-        "A new route/page exists for creating a Shop Update and is only accessible within the authenticated/protected app shell (consistent with existing protected routes).",
-        "The form validates that Title is required and is short (client-side constraint with a clear English error message).",
-        "Description is optional.",
-        "Image upload is optional and provides an in-page preview when selected.",
-        "Expiry option UI offers exactly: Today, 2 Days, and Custom Date (date picker).",
-        "All user-facing text is English."
+        "From /role-selection, clicking \"Continue as Shop Owner\" navigates to /shop-dashboard.",
+        "From /role-selection, clicking \"Continue as Customer\" navigates to /customer-home.",
+        "While the selection is being processed, the selected button shows a loading state and repeated taps do not trigger duplicate actions.",
+        "If navigation cannot proceed for any reason, show an English, user-visible error message (not only console logging)."
       ]
     },
     {
-      "id": "REQ-24",
-      "text": "Wire the Post Update form to backend APIs using React Query: on submit, create a ShopUpdate, show loading state, show a success confirmation in English, and navigate back to the Shop Dashboard (or otherwise reset the form) after success.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "Save posts in \"ShopUpdates\" collection..."
-        ]
-      },
-      "acceptanceCriteria": [
-        "A new React Query mutation exists for creating a ShopUpdate.",
-        "While submitting, the submit button is disabled and a visible loading state is shown.",
-        "On backend error, the UI shows a clear English error message and does not navigate away.",
-        "On success, the UI shows a clear English success message and then returns the user to the Shop Dashboard (or clears the form for another post) without breaking auth/session state.",
-        "After success, any cached ShopUpdates list queries used by the dashboard are invalidated/refetched so the new post appears."
-      ]
-    },
-    {
-      "id": "REQ-25",
-      "text": "Update the Shop Dashboard to display real data in \"My Active Posts\" and \"Expired Posts\" sections by fetching ShopUpdates for the caller; keep the existing English empty states when there are no items.",
+      "id": "REQ-37",
+      "text": "Add robust handling on the Role Selection page for missing OTP session phone number (localStorage cleared, etc.): show an English message explaining the session is incomplete and route the user back to the login page to re-verify OTP.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "recent-messages-user-1"
         ],
         "quotes": [
-          "My Active Posts\n\nExpired Posts"
+          "Either Continue as shop owner or continue as customer is not opening."
         ]
       },
       "acceptanceCriteria": [
-        "The Shop Dashboard fetches the caller’s ShopUpdates and splits them into Active vs Expired based on Expiry Date.",
-        "When updates exist, each section renders a simple list of posts showing at minimum: Title and Expiry Date; if an image exists, show a small thumbnail/preview.",
-        "When no updates exist for a section, the existing English empty state remains visible.",
-        "The existing behavior that disables \"Post Update\" when the owner has no shop remains intact."
+        "If the user taps a role and the OTP phone number is missing, the UI shows an English error (e.g., \"Your session expired. Please log in again.\") and navigates to /.",
+        "The app does not silently fail with only console errors in this case."
       ]
     },
     {
-      "id": "REQ-26",
-      "text": "Ensure Expiry Date selection is correctly converted to a backend timestamp: Today (end of day or within same day), 2 Days (now + 2 days), and Custom Date (user-selected date).",
-      "target": "both",
+      "id": "REQ-38",
+      "text": "Ensure Role Selection does not block navigation on a backend profile-save failure: if saving the profile fails, still route the user to the selected destination and show an English non-blocking warning that profile sync failed and can be retried later.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "recent-messages-user-1"
         ],
         "quotes": [
-          "Expiry option (Today / 2 Days / Custom Date)"
+          "Either Continue as shop owner or continue as customer is not opening."
         ]
       },
       "acceptanceCriteria": [
-        "Selecting Today results in an expiryDate that is on the current calendar day (implementation-defined exact time, but must not be in the past).",
-        "Selecting 2 Days results in an expiryDate approximately 48 hours in the future (must be later than now).",
-        "Selecting Custom Date requires a date to be chosen; the form cannot submit without it when Custom Date is selected.",
-        "The backend stores expiryDate in a consistent timestamp format (Time.Time) and uses it for active/expired classification."
+        "If saveCallerUserProfile fails (trap/network/actor unavailable), the app still navigates to the selected route.",
+        "An English warning message is shown indicating the profile could not be saved.",
+        "The role selection buttons remain usable after a failure (no permanent disabled state)."
+      ]
+    },
+    {
+      "id": "REQ-39",
+      "text": "Fix the Role Selection auto-redirect logic so it does not incorrectly force users to /customer-home on load regardless of their intent; only auto-redirect when a previously chosen role is unambiguous, otherwise keep the user on the Role Selection screen.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "recent-messages-user-1"
+        ],
+        "quotes": [
+          "Either Continue as shop owner or continue as customer is not opening."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Opening /role-selection does not immediately redirect the user away unless the app can confidently determine the user’s role selection state.",
+        "The Role Selection screen remains reachable after login when role is not clearly set."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor with all logic in backend/main.mo (no additional backend services).",
-    "Do not edit frontend immutable paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui.",
-    "Use English for all user-facing UI text and error messages."
+    "Do not edit files under frontend/src/components/ui (shadcn components are read-only and must be composed).",
+    "Do not modify immutable frontend hook files listed in SYSTEM_CONTEXT (e.g., frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx).",
+    "Keep backend as a single Motoko actor in backend/main.mo; only add a migration if an actual stable-state change is required."
   ],
   "nonGoals": [
-    "Implementing customer-side feed consumption of ShopUpdates (beyond shop owner dashboard display).",
-    "Adding push notifications, real-time updates, or WebSockets.",
-    "Integrating external image hosting/CDNs or external databases."
+    "Adding new roles/permissions to the backend authorization system beyond what is required to make role selection navigation work.",
+    "Implementing third-party auth providers or any non-Internet-Identity authentication.",
+    "Adding new product features unrelated to role selection navigation (e.g., new pages, new feed behavior)."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

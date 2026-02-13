@@ -2,56 +2,99 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Store, ShoppingBag, Loader2, ArrowRight } from 'lucide-react';
+import { Store, ShoppingBag, Loader2, ArrowRight, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useGetCallerUserProfile, useSaveCallerUserProfile } from '../hooks/useQueries';
 import { useOtpSession } from '../hooks/useOtpSession';
 import { UserRole } from '../backend';
 
 type RoleType = 'shop' | 'customer';
 
+const ROLE_CHOICE_KEY = 'localbuzz_role_choice';
+
 export default function RoleSelectionPage() {
   const navigate = useNavigate();
-  const [selectedRole, setSelectedRole] = useState<RoleType | null>(null);
+  const [processingRole, setProcessingRole] = useState<RoleType | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { data: userProfile, isLoading: profileLoading, isFetched } = useGetCallerUserProfile();
   const saveProfileMutation = useSaveCallerUserProfile();
-  const { phoneNumber } = useOtpSession();
+  const { phoneNumber, clearOtpSession } = useOtpSession();
 
-  // Redirect if user already has a role
+  // Only redirect if user has a previously persisted role choice
   useEffect(() => {
     if (userProfile && isFetched) {
-      // User already has a profile, redirect to appropriate page
-      if (userProfile.role === UserRole.user) {
-        // For now, default to customer home if role is just 'user'
-        // In a real app, you'd have a more specific role field
-        navigate({ to: '/customer-home' });
+      try {
+        const persistedRole = localStorage.getItem(ROLE_CHOICE_KEY);
+        if (persistedRole === 'shop') {
+          navigate({ to: '/shop-dashboard' });
+        } else if (persistedRole === 'customer') {
+          navigate({ to: '/customer-home' });
+        }
+        // If no persisted role, stay on role selection page
+      } catch {
+        // If localStorage fails, stay on role selection page
       }
     }
   }, [userProfile, isFetched, navigate]);
 
   const handleRoleSelect = async (role: RoleType) => {
-    setSelectedRole(role);
-
-    if (!phoneNumber) {
-      console.error('Phone number not found');
+    // Guard against duplicate selections while processing
+    if (processingRole !== null) {
       return;
     }
 
+    // Clear any previous error
+    setErrorMessage(null);
+    setProcessingRole(role);
+
+    // Check for missing OTP session
+    if (!phoneNumber) {
+      setErrorMessage('Your session expired. Please log in again.');
+      setProcessingRole(null);
+      // Clear session and navigate to login
+      clearOtpSession();
+      setTimeout(() => {
+        navigate({ to: '/' });
+      }, 2000);
+      return;
+    }
+
+    // Determine navigation target
+    const targetRoute = role === 'shop' ? '/shop-dashboard' : '/customer-home';
+
     try {
-      // Save profile with role
+      // Attempt to save profile
       await saveProfileMutation.mutateAsync({
         phoneNumber,
-        role: UserRole.user, // Backend uses UserRole enum
+        role: UserRole.user,
       });
 
-      // Navigate based on selection
-      if (role === 'shop') {
-        navigate({ to: '/shop-dashboard' });
-      } else {
-        navigate({ to: '/customer-home' });
+      // Persist role choice for future auto-redirect
+      try {
+        localStorage.setItem(ROLE_CHOICE_KEY, role);
+      } catch {
+        // Ignore localStorage errors
       }
+
+      // Navigate to target route
+      navigate({ to: targetRoute });
     } catch (error) {
+      // Show non-blocking warning but still navigate
       console.error('Failed to save profile:', error);
-      setSelectedRole(null);
+      setErrorMessage('Profile could not be saved, but you can continue. You may need to select your role again next time.');
+      
+      // Still persist role choice
+      try {
+        localStorage.setItem(ROLE_CHOICE_KEY, role);
+      } catch {
+        // Ignore localStorage errors
+      }
+
+      // Reset processing state and navigate anyway after a brief delay
+      setProcessingRole(null);
+      setTimeout(() => {
+        navigate({ to: targetRoute });
+      }, 1500);
     }
   };
 
@@ -70,13 +113,20 @@ export default function RoleSelectionPage() {
         <p className="text-muted-foreground">How would you like to use LocalBuzz?</p>
       </div>
 
+      {errorMessage && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{errorMessage}</AlertDescription>
+        </Alert>
+      )}
+
       <div className="grid gap-4 md:grid-cols-2">
         {/* Shop Owner Card */}
         <Card
           className={`cursor-pointer transition-all hover:shadow-lg ${
-            selectedRole === 'shop' ? 'ring-2 ring-primary' : ''
-          }`}
-          onClick={() => !saveProfileMutation.isPending && handleRoleSelect('shop')}
+            processingRole === 'shop' ? 'ring-2 ring-primary' : ''
+          } ${processingRole !== null ? 'opacity-75' : ''}`}
+          onClick={() => processingRole === null && handleRoleSelect('shop')}
         >
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
@@ -105,13 +155,13 @@ export default function RoleSelectionPage() {
             <Button
               className="w-full"
               size="lg"
-              disabled={saveProfileMutation.isPending}
+              disabled={processingRole !== null}
               onClick={(e) => {
                 e.stopPropagation();
                 handleRoleSelect('shop');
               }}
             >
-              {saveProfileMutation.isPending && selectedRole === 'shop' ? (
+              {processingRole === 'shop' ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Setting up...
@@ -126,9 +176,9 @@ export default function RoleSelectionPage() {
         {/* Customer Card */}
         <Card
           className={`cursor-pointer transition-all hover:shadow-lg ${
-            selectedRole === 'customer' ? 'ring-2 ring-primary' : ''
-          }`}
-          onClick={() => !saveProfileMutation.isPending && handleRoleSelect('customer')}
+            processingRole === 'customer' ? 'ring-2 ring-primary' : ''
+          } ${processingRole !== null ? 'opacity-75' : ''}`}
+          onClick={() => processingRole === null && handleRoleSelect('customer')}
         >
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
@@ -158,13 +208,13 @@ export default function RoleSelectionPage() {
               className="w-full"
               size="lg"
               variant="secondary"
-              disabled={saveProfileMutation.isPending}
+              disabled={processingRole !== null}
               onClick={(e) => {
                 e.stopPropagation();
                 handleRoleSelect('customer');
               }}
             >
-              {saveProfileMutation.isPending && selectedRole === 'customer' ? (
+              {processingRole === 'customer' ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Setting up...

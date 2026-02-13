@@ -63,6 +63,19 @@ actor {
     shopLocation : Location;
   };
 
+  public type FeedShopUpdate = {
+    updateId : Text;
+    shopName : Text;
+    shopId : Principal;
+    shopCategory : Text;
+    title : Text;
+    description : ?Text;
+    image : ?Storage.ExternalBlob;
+    expiryDate : Time.Time;
+    timestamp : Time.Time;
+    shopLocation : Location;
+  };
+
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
 
@@ -395,5 +408,35 @@ actor {
       };
     };
   };
-  // matches previous (old) state no migration needed :D
+
+  public query ({ caller }) func getCustomerHomeFeed() : async [FeedShopUpdate] {
+    let currentTime = Time.now();
+
+    let activeUpdates = shopUpdates.toArray().filter(
+      func((_, update)) { currentTime <= update.expiryDate }
+    );
+
+    let feedUpdatesArray = activeUpdates.map(
+      func((updateId, update)) {
+        let (shopName, shopCategory) = switch (shops.get(update.shopId)) {
+          case (null) { ("", "") };
+          case (?shop) { (shop.name, shop.category) };
+        };
+        {
+          updateId;
+          shopName;
+          shopId = update.shopId;
+          shopCategory;
+          title = update.title;
+          description = update.description;
+          image = update.image;
+          expiryDate = update.expiryDate;
+          timestamp = update.timestamp;
+          shopLocation = update.shopLocation;
+        };
+      }
+    );
+
+    feedUpdatesArray;
+  };
 };

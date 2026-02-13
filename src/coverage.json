@@ -1,98 +1,71 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-13T15:43:26.898Z",
+  "generatedAt": "2026-02-13T16:34:38.359Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 6,
+    "total": 4,
     "implemented": 4,
     "items": [
       {
-        "id": "REQ-21",
-        "summary": "Add backend support for a new \"ShopUpdates\" collection that persists shop owner posts with the following fields: Shop ID, Title, Description (optional), Image (optional), Expiry Date, Timestamp, and Shop Location (latitude, longitude).",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-22",
-        "summary": "Implement backend APIs to create and fetch ShopUpdates for the current shop owner, ensuring each created update automatically attaches the shop’s registered location (latitude/longitude) to the post.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-23",
-        "summary": "Create a Shop Owner \"Post Update\" UI flow: when the Shop Owner taps \"Post Update\" from the Shop Dashboard, navigate to a new page containing a form with fields Title (short text), Description (optional), Optional Image upload (with preview), and Expiry option (Today / 2 Days / Custom Date).",
+        "id": "REQ-36",
+        "summary": "Fix the Role Selection page so tapping/clicking \"Continue as Shop Owner\" or \"Continue as Customer\" always performs a visible action and navigates to the correct route (/shop-dashboard or /customer-home) instead of appearing to do nothing.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/ShopPostUpdatePage.tsx",
-          "frontend/src/App.tsx"
+          "frontend/src/pages/RoleSelectionPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/ShopPostUpdatePage.tsx",
-          "frontend/src/App.tsx"
+          "frontend/src/pages/RoleSelectionPage.tsx"
         ]
       },
       {
-        "id": "REQ-24",
-        "summary": "Wire the Post Update form to backend APIs using React Query: on submit, create a ShopUpdate, show loading state, show a success confirmation in English, and navigate back to the Shop Dashboard (or otherwise reset the form) after success.",
+        "id": "REQ-37",
+        "summary": "Add robust handling on the Role Selection page for missing OTP session phone number (localStorage cleared, etc.): show an English message explaining the session is incomplete and route the user back to the login page to re-verify OTP.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/useShopUpdates.ts",
-          "frontend/src/pages/ShopPostUpdatePage.tsx"
+          "frontend/src/pages/RoleSelectionPage.tsx",
+          "frontend/src/hooks/useOtpSession.ts"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/useShopUpdates.ts",
-          "frontend/src/pages/ShopPostUpdatePage.tsx"
+          "frontend/src/pages/RoleSelectionPage.tsx"
         ]
       },
       {
-        "id": "REQ-25",
-        "summary": "Update the Shop Dashboard to display real data in \"My Active Posts\" and \"Expired Posts\" sections by fetching ShopUpdates for the caller; keep the existing English empty states when there are no items.",
+        "id": "REQ-38",
+        "summary": "Ensure Role Selection does not block navigation on a backend profile-save failure: if saving the profile fails, still route the user to the selected destination and show an English non-blocking warning that profile sync failed and can be retried later.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/ShopDashboardPage.tsx"
+          "frontend/src/pages/RoleSelectionPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/ShopDashboardPage.tsx"
+          "frontend/src/pages/RoleSelectionPage.tsx"
         ]
       },
       {
-        "id": "REQ-26",
-        "summary": "Ensure Expiry Date selection is correctly converted to a backend timestamp: Today (end of day or within same day), 2 Days (now + 2 days), and Custom Date (user-selected date).",
+        "id": "REQ-39",
+        "summary": "Fix the Role Selection auto-redirect logic so it does not incorrectly force users to /customer-home on load regardless of their intent; only auto-redirect when a previously chosen role is unambiguous, otherwise keep the user on the Role Selection screen.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/utils/time.ts",
-          "frontend/src/pages/ShopPostUpdatePage.tsx",
-          "frontend/src/pages/ShopDashboardPage.tsx"
+          "frontend/src/pages/RoleSelectionPage.tsx",
+          "frontend/src/components/MobileAppShell.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/utils/time.ts",
-          "frontend/src/pages/ShopPostUpdatePage.tsx",
-          "frontend/src/pages/ShopDashboardPage.tsx"
+          "frontend/src/pages/RoleSelectionPage.tsx",
+          "frontend/src/components/MobileAppShell.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/App.tsx",
-    "frontend/src/backend.d.ts",
-    "frontend/src/backend.ts",
-    "frontend/src/declarations/backend.did.d.ts",
-    "frontend/src/declarations/backend.did.js",
-    "frontend/src/hooks/useShopUpdates.ts",
-    "frontend/src/pages/ShopDashboardPage.tsx",
-    "frontend/src/pages/ShopPostUpdatePage.tsx",
-    "frontend/src/utils/time.ts",
+    "frontend/src/components/MobileAppShell.tsx",
+    "frontend/src/pages/RoleSelectionPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

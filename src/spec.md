@@ -1,14 +1,14 @@
 # Specification
 
 ## Summary
-**Goal:** Let shop owners create, persist, and view expiring “Shop Updates” posts (optionally with an image) from the Shop Dashboard.
+**Goal:** Make the Role Selection buttons reliably navigate to the correct destination and provide clear user feedback (loading, errors, and warnings) instead of appearing to do nothing.
 
 **Planned changes:**
-- Add a backend `ShopUpdates` record type and in-canister storage for posts containing: shopId, title, optional description, optional image, expiryDate, createdAt timestamp, and shopLocation (lat/long).
-- Implement authenticated backend APIs to create a ShopUpdate (fails if caller has no registered shop; always uses the shop’s stored lat/long) and to fetch the caller’s updates with active vs expired distinction based on expiryDate.
-- Add a protected “Post Update” page with a form: Title (required, short), optional Description, optional Image upload with preview, and Expiry selection (Today / 2 Days / Custom Date with date picker).
-- Wire the form to backend create API via React Query mutation with loading/disabled submit, English success/error messages, navigation back to the dashboard (or form reset) on success, and cache invalidation so new posts appear.
-- Update the Shop Dashboard to fetch real ShopUpdates and render “My Active Posts” and “Expired Posts” lists showing at least Title and Expiry Date (plus thumbnail when an image exists), keeping existing English empty states and the current “Post Update” disabled behavior when no shop exists.
-- Ensure expiry selection is converted consistently to a backend timestamp: Today (not in the past), 2 Days (~48 hours from now), Custom Date (required when selected).
+- Fix click/tap handlers on /role-selection so “Continue as Shop Owner” routes to `/shop-dashboard` and “Continue as Customer” routes to `/customer-home`.
+- Add per-selection loading/disabled behavior to prevent duplicate taps while a selection is processing.
+- Show user-visible English error messages when navigation or session prerequisites fail (no silent console-only failures).
+- Add handling for missing OTP session phone number: show an “session expired/incomplete” message and route the user back to `/` to re-verify.
+- Adjust profile-save behavior so save failures do not block navigation; still navigate and show a non-blocking warning that profile sync failed and can be retried later.
+- Fix auto-redirect logic on /role-selection to only redirect when a previously selected role is unambiguous; otherwise keep the user on the Role Selection screen.
 
-**User-visible outcome:** A shop owner can post a new update with an optional image and expiry setting, then see their active and expired posts on the Shop Dashboard, with new posts appearing immediately after submission.
+**User-visible outcome:** On the Role Selection page, tapping either role always triggers a visible loading state and then navigates to the correct screen; if the session is missing or a save fails, the user sees an English message and the app still behaves predictably (including routing back to login when needed).

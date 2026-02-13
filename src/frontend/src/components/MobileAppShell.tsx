@@ -6,6 +6,8 @@ import { useOtpSession } from '../hooks/useOtpSession';
 import { useQueryClient } from '@tanstack/react-query';
 import AppBackButton from './AppBackButton';
 
+const ROLE_CHOICE_KEY = 'localbuzz_role_choice';
+
 export default function MobileAppShell() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -17,6 +19,14 @@ export default function MobileAppShell() {
     await clear();
     clearOtpSession();
     queryClient.clear();
+    
+    // Clear persisted role choice on logout
+    try {
+      localStorage.removeItem(ROLE_CHOICE_KEY);
+    } catch {
+      // Ignore localStorage errors
+    }
+    
     navigate({ to: '/' });
   };
 

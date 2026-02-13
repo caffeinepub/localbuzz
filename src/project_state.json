@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 17,
-  "summary": "LocalBuzz mobile app with OTP login for Shop Owners and Customers, role selection after login, routing to Shop Dashboard or Customer Home Feed, clean UI, location permission, a Shop Owner registration flow that creates a Shop record linked to the owner user ID, and a Shop Owner 'Post Update' feature that creates expiring shop updates with optional image and attached shop location stored in a ShopUpdates collection.",
+  "projectStateVersion": 25,
+  "summary": "LocalBuzz mobile app with OTP login for Shop Owners and Customers, role selection after login, routing to Shop Dashboard or Customer Home Feed, clean UI, location permission, a Shop Owner registration flow that creates a Shop record linked to the owner user ID, a Shop Owner 'Post Update' feature that creates expiring shop updates with optional image and attached shop location stored in a ShopUpdates collection, a Customer Home Feed that requests location, detects GPS, and lists nearby ShopUpdates within a 3 km radius sorted by newest then closest distance with post cards showing shop name, distance, title, optional image, and expiry status, plus push notifications to customers for new nearby ShopUpdates (3 km) showing shop name + update title with a limit of 3 notifications per shop per day.",
   "architectural_notes": [
     "Two user roles: Shop Owner and Customer.",
     "Authentication via mobile OTP for all users.",
@@ -9,15 +9,20 @@
     "App requires location permission.",
     "Phone number input/OTP login should default to India country code (+91).",
     "Add a 'Shops' data model/table/collection to store Shop Owner registration details (shop name, category, address, latitude/longitude, image URL/path) and link each shop record to the owning user ID.",
-    "Add a 'ShopUpdates' data model/table/collection storing shop updates: shopId, title, optional description, optional image URL/path, expiryDate, created timestamp, and shop location (lat/long) auto-attached to each post."
+    "Add a 'ShopUpdates' data model/table/collection storing shop updates: shopId, title, optional description, optional image URL/path, expiryDate, created timestamp, and shop location (lat/long) auto-attached to each post.",
+    "Customer Home Feed: fetch ShopUpdates within a 3 km radius of the user’s current GPS location; sort by newest first then closest distance; show shop name, distance, title, optional image, and expiry status on each card.",
+    "Customer Home Feed: add a top-of-feed category filter (Grocery/Clothing/Electronics/Medical/Food/Other) that filters the visible nearby ShopUpdates by the originating shop’s category.",
+    "Push notifications: notify customers when a new ShopUpdate is posted within 3 km; payload shows Shop Name + Update Title; rate limit to max 3 notifications per shop per day."
   ],
   "known_issues": [
     "OTP login phone number country code is incorrect; should be India (+91).",
     "Users are not receiving OTP SMS on their phone numbers during login.",
     "Location permission is being denied (location access request/handling is not working as expected).",
-    "App generation/build failed when attempting to create the Shop Dashboard (needs retry/fix)."
+    "App generation/build failed when attempting to create the Shop Dashboard (needs retry/fix).",
+    "App generation/build failed when attempting to create the Customer Home Feed (needs retry/fix).",
+    "Role selection screen buttons ('Continue as Shop Owner' / 'Continue as Customer') are not opening/navigating (tap/click has no effect)."
   ],
-  "isFixRequest": false,
+  "isFixRequest": true,
   "existing_features": [
     {
       "id": "feature-create-the-basic-localbuzz-app-structure-with-mobile-first-navigation-and-three-primary-flows-screens-1-login-2-role-selection-shop-owner-vs-customer-and-3-post-login-destinations-shop-dashboard-and-customer-home-feed",
@@ -194,6 +199,94 @@
         "REQ-26"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-implement-customer-home-feed-behavior-on-the-frontend-so-that-when-the-customer-home-feed-route-opens-the-app-requests-location-permission-and-fetches-the-user-s-gps-coordinates-once-coordinates-are-available-fetch-active-shopupdates-and-filter-to-those-within-a-3-km-radius-of-the-user",
+      "title": "Implement Customer Home Feed behavior on the frontend so that when the Customer Home Feed route opens, the app requests location permission and fetches the user’s GPS coordinates; once coordinates are available, fetch active ShopUpdates and filter to those within a 3 km radius of the user.",
+      "reqIds": [
+        "REQ-28"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-render-the-customer-home-feed-list-of-nearby-shopupdates-as-post-cards-sorted-by-1-newest-first-and-2-closest-distance-and-display-the-required-fields-on-each-card-shop-name-distance-title-optional-image-and-expiry-status",
+      "title": "Render the Customer Home Feed list of nearby ShopUpdates as post cards sorted by (1) newest first and (2) closest distance, and display the required fields on each card: Shop Name, Distance, Title, optional Image, and Expiry status.",
+      "reqIds": [
+        "REQ-29"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-category-filter-control-at-the-top-of-the-customer-home-feed-page-with-selectable-options-grocery-clothing-electronics-medical-food-other-when-a-category-is-selected-show-only-nearby-updates-from-that-category-when-no-category-is-selected-show-all-nearby-updates",
+      "title": "Add a category filter control at the top of the Customer Home Feed page with selectable options: Grocery, Clothing, Electronics, Medical, Food, Other. When a category is selected, show only nearby updates from that category; when no category is selected, show all nearby updates.",
+      "reqIds": [
+        "REQ-31"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-customer-home-feed-query-hook-so-it-can-filter-results-by-an-optional-selected-category-while-preserving-existing-distance-filtering-3-km-and-sorting-newest-first-then-closest",
+      "title": "Update the customer home feed query hook so it can filter results by an optional selected category while preserving existing distance filtering (3 km) and sorting (newest first, then closest).",
+      "reqIds": [
+        "REQ-32"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-customer-facing-notification-permission-and-status-ui-on-the-customer-home-feed-page-that-allows-the-customer-to-enable-browser-notifications-for-localbuzz-and-clearly-shows-whether-notifications-are-enabled-blocked-unsupported",
+      "title": "Add a customer-facing notification permission and status UI on the Customer Home Feed page that allows the customer to enable browser notifications for LocalBuzz and clearly shows whether notifications are enabled/blocked/unsupported.",
+      "reqIds": [
+        "REQ-33"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-trigger-a-browser-notification-for-customers-when-a-newly-created-shopupdate-appears-within-the-customer-s-3-km-feed-radius-with-the-notification-content-formatted-as-shop-name-update-title",
+      "title": "Trigger a browser notification for customers when a newly created ShopUpdate appears within the customer’s 3 km feed radius, with the notification content formatted as \"{Shop Name} — {Update Title}\".",
+      "reqIds": [
+        "REQ-34"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-enforce-a-client-side-notification-rate-limit-of-maximum-3-notifications-per-shop-per-day-for-customer-notifications-about-new-nearby-shopupdates",
+      "title": "Enforce a client-side notification rate limit of maximum 3 notifications per shop per day for customer notifications about new nearby ShopUpdates.",
+      "reqIds": [
+        "REQ-35"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-role-selection-page-so-tapping-clicking-continue-as-shop-owner-or-continue-as-customer-always-performs-a-visible-action-and-navigates-to-the-correct-route-shop-dashboard-or-customer-home-instead-of-appearing-to-do-nothing",
+      "title": "Fix the Role Selection page so tapping/clicking \"Continue as Shop Owner\" or \"Continue as Customer\" always performs a visible action and navigates to the correct route (/shop-dashboard or /customer-home) instead of appearing to do nothing.",
+      "reqIds": [
+        "REQ-36"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-robust-handling-on-the-role-selection-page-for-missing-otp-session-phone-number-localstorage-cleared-etc-show-an-english-message-explaining-the-session-is-incomplete-and-route-the-user-back-to-the-login-page-to-re-verify-otp",
+      "title": "Add robust handling on the Role Selection page for missing OTP session phone number (localStorage cleared, etc.): show an English message explaining the session is incomplete and route the user back to the login page to re-verify OTP.",
+      "reqIds": [
+        "REQ-37"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-role-selection-does-not-block-navigation-on-a-backend-profile-save-failure-if-saving-the-profile-fails-still-route-the-user-to-the-selected-destination-and-show-an-english-non-blocking-warning-that-profile-sync-failed-and-can-be-retried-later",
+      "title": "Ensure Role Selection does not block navigation on a backend profile-save failure: if saving the profile fails, still route the user to the selected destination and show an English non-blocking warning that profile sync failed and can be retried later.",
+      "reqIds": [
+        "REQ-38"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-role-selection-auto-redirect-logic-so-it-does-not-incorrectly-force-users-to-customer-home-on-load-regardless-of-their-intent-only-auto-redirect-when-a-previously-chosen-role-is-unambiguous-otherwise-keep-the-user-on-the-role-selection-screen",
+      "title": "Fix the Role Selection auto-redirect logic so it does not incorrectly force users to /customer-home on load regardless of their intent; only auto-redirect when a previously chosen role is unambiguous, otherwise keep the user on the Role Selection screen.",
+      "reqIds": [
+        "REQ-39"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -275,6 +368,40 @@
       "reqIds": [
         "REQ-22"
       ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-15",
+      "summary": "Create Customer Home Feed that requests location on app open, detects GPS, and shows nearby ShopUpdates within 3 km sorted by newest first then closest; each card shows Shop Name, distance, title, optional image, and expiry status.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-16",
+      "summary": "Update the backend to support the Customer Home Feed by exposing a query API that returns active ShopUpdates enriched with the originating shop’s name (and the updateId), so the frontend can render a nearby feed without making per-item shop lookup calls.",
+      "reqIds": [
+        "REQ-27"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-17",
+      "summary": "Add a category filter control at the top of the Customer Home Feed (Grocery, Clothing, Electronics, Medical, Food, Other) to show only ShopUpdates from the selected shop category.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-18",
+      "summary": "Extend the Customer Home Feed backend API to include each update's shop category so the frontend can filter feed items by category.",
+      "reqIds": [
+        "REQ-30"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-19",
+      "summary": "Enable push notifications to customers for new ShopUpdates within 3 km radius; notification shows Shop Name + Update Title; limit to max 3 notifications per shop per day.",
+      "reqIds": [],
       "status": "pending"
     }
   ],

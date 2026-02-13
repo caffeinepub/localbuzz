@@ -58,6 +58,18 @@ export const Shop = IDL.Record({
   'category' : IDL.Text,
   'image' : ExternalBlob,
 });
+export const FeedShopUpdate = IDL.Record({
+  'title' : IDL.Text,
+  'shopCategory' : IDL.Text,
+  'shopId' : IDL.Principal,
+  'expiryDate' : Time,
+  'shopLocation' : Location,
+  'description' : IDL.Opt(IDL.Text),
+  'updateId' : IDL.Text,
+  'timestamp' : Time,
+  'shopName' : IDL.Text,
+  'image' : IDL.Opt(ExternalBlob),
+});
 
 export const idlService = IDL.Service({
   '_caffeineStorageBlobIsLive' : IDL.Func(
@@ -108,6 +120,7 @@ export const idlService = IDL.Service({
   'getAllShops' : IDL.Func([], [IDL.Vec(Shop)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+  'getCustomerHomeFeed' : IDL.Func([], [IDL.Vec(FeedShopUpdate)], ['query']),
   'getLastKnownLocation' : IDL.Func([], [IDL.Opt(Location)], ['query']),
   'getOtpChallenge' : IDL.Func([IDL.Text], [IDL.Text], []),
   'getShop' : IDL.Func([IDL.Principal], [IDL.Opt(Shop)], ['query']),
@@ -191,6 +204,18 @@ export const idlFactory = ({ IDL }) => {
     'category' : IDL.Text,
     'image' : ExternalBlob,
   });
+  const FeedShopUpdate = IDL.Record({
+    'title' : IDL.Text,
+    'shopCategory' : IDL.Text,
+    'shopId' : IDL.Principal,
+    'expiryDate' : Time,
+    'shopLocation' : Location,
+    'description' : IDL.Opt(IDL.Text),
+    'updateId' : IDL.Text,
+    'timestamp' : Time,
+    'shopName' : IDL.Text,
+    'image' : IDL.Opt(ExternalBlob),
+  });
   
   return IDL.Service({
     '_caffeineStorageBlobIsLive' : IDL.Func(
@@ -247,6 +272,7 @@ export const idlFactory = ({ IDL }) => {
     'getAllShops' : IDL.Func([], [IDL.Vec(Shop)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+    'getCustomerHomeFeed' : IDL.Func([], [IDL.Vec(FeedShopUpdate)], ['query']),
     'getLastKnownLocation' : IDL.Func([], [IDL.Opt(Location)], ['query']),
     'getOtpChallenge' : IDL.Func([IDL.Text], [IDL.Text], []),
     'getShop' : IDL.Func([IDL.Principal], [IDL.Opt(Shop)], ['query']),
