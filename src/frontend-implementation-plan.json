@@ -1,6 +1,55 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Automatic expiry for ShopUpdates (frontend impact assessment)",
-  "requirements": []
+  "title": "Enable editable shop search and client-side filtering on Customer Home Feed",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "summary": "Replace the non-editable search control with a real, accessible text input while preserving the left-search/right-filter layout.",
+      "acceptanceCriteria": [
+        "On /customer-home, the search control is an <input> (or equivalent) that can be focused and accepts keyboard input on desktop and mobile.",
+        "Tapping/clicking the search field places the cursor in the field and the on-screen keyboard opens on mobile.",
+        "The search field has an accessible label (e.g., aria-label=\"Search shops\") and a visible placeholder text \"Search shops...\"."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/CustomerHomeFeedPage.tsx",
+          "operation": "modify",
+          "description": "Replace the current outline Button used as a faux search control with a real controlled text input (native input or composition with existing read-only UI components), keeping the same overall layout (search area left, filter button right). Add placeholder \"Search shops...\" and an accessible label via aria-label=\"Search shops\"; ensure the input can be focused and typed into on desktop and mobile. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Filter rendered customer feed cards client-side based on the search query (case-insensitive) and show an empty state for zero matches.",
+      "acceptanceCriteria": [
+        "When the user types in the search field, the list of rendered feed cards updates to show only items whose shop text matches the query (case-insensitive).",
+        "Clearing the search text restores the full set of items (subject to existing category/location filters).",
+        "If the current search yields zero matches, show a clear empty state message in English (e.g., \"No shops match your search.\")."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/CustomerHomeFeedPage.tsx",
+          "operation": "modify",
+          "description": "Introduce local state for the search query and derive a filtered list from the existing feedItems returned by useCustomerHomeFeed (which already applies location/category filtering). Implement case-insensitive matching against the shop text (at minimum shopName; optionally include title/description for better UX) and render only matching cards. When the filtered results are empty (and the base feedItems is non-empty), render an English empty state message like \"No shops match your search.\" within the feed area. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Add an in-field clear (X) control that clears the search query, preserves focus, and is accessible.",
+      "acceptanceCriteria": [
+        "A clear control is only visible/enabled when the search query is non-empty.",
+        "Clicking/tapping the clear control empties the field and keeps focus in the input so the user can continue typing.",
+        "The clear control is keyboard accessible and has an accessible label (e.g., aria-label=\"Clear search\")."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/CustomerHomeFeedPage.tsx",
+          "operation": "modify",
+          "description": "Add an in-field clear button (X) within the search input area that appears only when the query is non-empty. On activation, clear the query and programmatically restore focus to the input (use a ref). Ensure the clear control is keyboard accessible (button element) with aria-label=\"Clear search\", and prevent pointer interactions from disrupting typing/focus (e.g., avoid blurring the input on mouse/touch). Verify the component's usage instructions before implementing."
+        }
+      ]
+    }
+  ]
 }

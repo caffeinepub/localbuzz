@@ -1,48 +1,40 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Implement automatic expiry for ShopUpdates so updates deactivate when expiryDate is reached via a scheduled backend job; keep expired documents for analytics/history.",
-  "architectural_notes": [
-    "Add a scheduled backend job (cron/cloud scheduler) running every 10 minutes to find ShopUpdates where isActive=true and expiryDate <= now, then set isActive=false and expiredAt=now; do not delete expired docs.",
-    "Optimize expiry lookup with a database index on (isActive, expiryDate).",
-    "Customer Home Feed should only query active, unexpired ShopUpdates (isActive=true AND expiryDate > now) so expired items disappear automatically."
+  "summary": "New project",
+  "architectural_notes": [],
+  "known_issues": [
+    "Search shop input is not accepting typing (user cannot enter text)."
   ],
-  "known_issues": [],
-  "isFixRequest": false,
-  "existing_features": [],
-  "new_feature_requests": [
+  "isFixRequest": true,
+  "existing_features": [
     {
-      "id": "AR-1",
-      "summary": "Automatic expiry system for ShopUpdates (scheduled job deactivates updates at expiryDate, sets expiredAt, retains records)",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-2",
-      "summary": "Add a backend scheduled process that runs every 10 minutes and automatically expires ShopUpdates: find all ShopUpdates where isActive == true and expiryDate <= current canister time, then set isActive = false and set expiredAt = current timestamp. Expired ShopUpdates must not be deleted.",
+      "id": "feature-replace-the-non-editable-search-shops-control-on-the-customer-home-feed-page-with-a-real-text-input-that-accepts-typing-and-focus-while-keeping-the-same-general-layout-search-field-on-the-left-filter-button-on-the-right",
+      "title": "Replace the non-editable \"Search shops...\" control on the Customer Home Feed page with a real text input that accepts typing and focus, while keeping the same general layout (search field on the left, filter button on the right).",
       "reqIds": [
         "REQ-1"
       ],
-      "status": "pending"
+      "version": 1
     },
     {
-      "id": "AR-3",
-      "summary": "Extend the backend ShopUpdate data model to store when an update was expired by adding an optional expiredAt field (null when not expired). Ensure any existing persisted ShopUpdates remain readable after upgrade and default to expiredAt = null if missing.",
+      "id": "feature-implement-client-side-filtering-of-the-displayed-feed-items-on-the-customer-home-feed-page-based-on-the-entered-search-text-case-insensitive-without-requiring-any-backend-changes",
+      "title": "Implement client-side filtering of the displayed feed items on the Customer Home Feed page based on the entered search text (case-insensitive), without requiring any backend changes.",
       "reqIds": [
         "REQ-2"
       ],
-      "status": "pending"
+      "version": 1
     },
     {
-      "id": "AR-4",
-      "summary": "Ensure all backend APIs used for customer-facing feeds only return currently active, unexpired ShopUpdates (isActive == true AND expiryDate > current canister time), so expired updates are automatically removed from the Customer Home Feed without requiring frontend changes.",
+      "id": "feature-add-an-in-field-clear-control-e-g-an-x-button-for-the-search-input-that-clears-the-query-and-returns-focus-to-the-input-and-ensure-it-does-not-interfere-with-typing",
+      "title": "Add an in-field clear control (e.g., an X button) for the search input that clears the query and returns focus to the input, and ensure it does not interfere with typing.",
       "reqIds": [
         "REQ-3"
       ],
-      "status": "pending"
+      "version": 1
     }
   ],
-  "projectName": "Automatic expiry for ShopUpdates (deactivate at expiryDate)",
+  "new_feature_requests": [],
+  "projectName": "Fix 'Search shops' so users can type and filter the customer feed",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

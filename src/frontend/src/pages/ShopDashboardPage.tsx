@@ -1,10 +1,9 @@
-import { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Store, Plus, Edit, Calendar, Loader2 } from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';
 import { useGetShopsByOwner, useSetShopOpenStatus } from '../hooks/useShop';
-import { useGetAllShopUpdatesForShop } from '../hooks/useShopUpdates';
+import { useGetAllShopUpdatesForShop, useGetExpiredUpdatesForShop } from '../hooks/useShopUpdates';
 import ShopOpenClosedToggle from '../components/ShopOpenClosedToggle';
 import { isActive, formatTime } from '../utils/time';
 
@@ -13,6 +12,7 @@ export default function ShopDashboardPage() {
   const { data: shops, isLoading: shopLoading } = useGetShopsByOwner();
   const shop = shops && shops.length > 0 ? shops[0] : null;
   const { data: updates, isLoading: updatesLoading } = useGetAllShopUpdatesForShop();
+  const { data: expiredUpdates, isLoading: expiredLoading } = useGetExpiredUpdatesForShop();
   const setShopOpenStatus = useSetShopOpenStatus();
 
   const handleRegisterShop = () => {
@@ -35,9 +35,8 @@ export default function ShopDashboardPage() {
 
   const hasShop = !shopLoading && !!shop;
 
-  // Split updates into active and expired
+  // Filter active updates using client-side isActive check
   const activeUpdates = updates?.filter((update) => isActive(update.expiryDate)) || [];
-  const expiredUpdates = updates?.filter((update) => !isActive(update.expiryDate)) || [];
 
   return (
     <div className="space-y-6">
@@ -184,11 +183,23 @@ export default function ShopDashboardPage() {
         </CardContent>
       </Card>
 
-      {/* Expired Posts */}
-      {expiredUpdates.length > 0 && (
+      {/* Expired Updates */}
+      {expiredLoading ? (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Expired Posts</CardTitle>
+            <CardTitle className="text-lg">Expired Updates</CardTitle>
+            <CardDescription className="text-base">Past updates no longer visible to customers</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          </CardContent>
+        </Card>
+      ) : expiredUpdates && expiredUpdates.length > 0 ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Expired Updates</CardTitle>
             <CardDescription className="text-base">Past updates no longer visible to customers</CardDescription>
           </CardHeader>
           <CardContent>
@@ -217,7 +228,9 @@ export default function ShopDashboardPage() {
                       )}
                       <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
                         <Calendar className="h-3 w-3" />
-                        <span>Expired: {formatTime(update.expiryDate)}</span>
+                        <span>
+                          Expired: {update.expiredAt ? formatTime(update.expiredAt) : formatTime(update.expiryDate)}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -226,7 +239,7 @@ export default function ShopDashboardPage() {
             </div>
           </CardContent>
         </Card>
-      )}
+      ) : null}
     </div>
   );
 }

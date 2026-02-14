@@ -15,9 +15,7 @@ import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 import Storage "blob-storage/Storage";
 import MixinStorage "blob-storage/Mixin";
-import Migration "migration";
 
-(with migration = Migration.run)
 actor {
   public type UserProfile = {
     name : ?Text;
@@ -70,6 +68,17 @@ actor {
     location : GeoPoint;
     isActive : Bool;
     expiredAt : ?Time.Time;
+  };
+
+  module ShopUpdate {
+    public func compareByExpiredAtDescending(a : ShopUpdate, b : ShopUpdate) : Order.Order {
+      switch (a.expiredAt, b.expiredAt) {
+        case (?timeA, ?timeB) { Int.compare(timeB, timeA) };
+        case (null, ?_) { #greater };
+        case (?_, null) { #less };
+        case (null, null) { #equal };
+      };
+    };
   };
 
   public type FeedShopUpdate = {
@@ -602,6 +611,30 @@ actor {
       func(su) { su.isActive and (currentTime <= su.expiryDate) }
     );
     filtered;
+  };
+
+  public query ({ caller }) func getExpiredUpdatesForShop(shopId : Text) : async [ShopUpdate] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only authenticated users can view shop updates");
+    };
+
+    // Verify ownership: only shop owner or admin can see expired updates
+    let shop = switch (shops.get(shopId)) {
+      case (null) { Runtime.trap("Shop not found") };
+      case (?s) { s };
+    };
+
+    if (caller != shop.ownerId and not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Can only view expired updates for your own shop");
+    };
+
+    // Apply filtering for shopId and isActive == false
+    let filtered = shopUpdates.values().toArray().filter(
+      func(su) { su.shopId == shopId and not su.isActive }
+    );
+
+    // Sort filtered updates by expiredAt descending
+    filtered.sort(ShopUpdate.compareByExpiredAtDescending);
   };
 
   public shared ({ caller }) func updateShopUpdate(

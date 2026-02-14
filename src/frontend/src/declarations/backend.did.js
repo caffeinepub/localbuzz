@@ -151,6 +151,11 @@ export const idlService = IDL.Service({
       [IDL.Vec(FeedShopUpdate)],
       ['query'],
     ),
+  'getExpiredUpdatesForShop' : IDL.Func(
+      [IDL.Text],
+      [IDL.Vec(ShopUpdate)],
+      ['query'],
+    ),
   'getLastKnownLocation' : IDL.Func([], [IDL.Opt(Location)], ['query']),
   'getOtpChallenge' : IDL.Func([IDL.Text], [IDL.Text], []),
   'getPendingNotifications' : IDL.Func([], [IDL.Vec(Notification)], ['query']),
@@ -335,6 +340,11 @@ export const idlFactory = ({ IDL }) => {
     'getCustomerHomeFeed' : IDL.Func(
         [IDL.Float64, IDL.Float64],
         [IDL.Vec(FeedShopUpdate)],
+        ['query'],
+      ),
+    'getExpiredUpdatesForShop' : IDL.Func(
+        [IDL.Text],
+        [IDL.Vec(ShopUpdate)],
         ['query'],
       ),
     'getLastKnownLocation' : IDL.Func([], [IDL.Opt(Location)], ['query']),

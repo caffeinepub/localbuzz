@@ -123,6 +123,7 @@ export interface _SERVICE {
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getCustomerFavorites' : ActorMethod<[], Array<Shop>>,
   'getCustomerHomeFeed' : ActorMethod<[number, number], Array<FeedShopUpdate>>,
+  'getExpiredUpdatesForShop' : ActorMethod<[string], Array<ShopUpdate>>,
   'getLastKnownLocation' : ActorMethod<[], [] | [Location]>,
   'getOtpChallenge' : ActorMethod<[string], string>,
   'getPendingNotifications' : ActorMethod<[], Array<Notification>>,

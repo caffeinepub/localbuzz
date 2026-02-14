@@ -101,6 +101,7 @@ export interface backendInterface {
     getCallerUserRole(): Promise<UserRole>;
     getCustomerFavorites(): Promise<Array<Shop>>;
     getCustomerHomeFeed(referenceLat: number, referenceLon: number): Promise<Array<FeedShopUpdate>>;
+    getExpiredUpdatesForShop(shopId: string): Promise<Array<ShopUpdate>>;
     getLastKnownLocation(): Promise<Location | null>;
     getOtpChallenge(phoneNumber: string): Promise<string>;
     getPendingNotifications(): Promise<Array<Notification>>;

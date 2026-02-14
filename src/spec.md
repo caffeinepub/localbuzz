@@ -1,11 +1,13 @@
 # Specification
 
 ## Summary
-**Goal:** Automatically mark ShopUpdates as expired when their expiryDate passes, and ensure customer-facing feeds only return active, unexpired updates.
+**Goal:** Make the “Search shops...” control on the Customer Home Feed functional so users can type to filter the displayed shop feed.
 
 **Planned changes:**
-- Add an optional `expiredAt` field to the ShopUpdate backend data model (null when not expired) and maintain backward compatibility for previously stored records.
-- Implement a backend scheduled process that runs every 10 minutes to find active ShopUpdates with `expiryDate <= current canister time`, set `isActive = false`, and set `expiredAt` to the expiration run timestamp (without deleting records).
-- Update backend feed/query APIs used by the customer home feed to return only ShopUpdates where `isActive == true` and `expiryDate > current canister time`.
+- Replace the existing non-editable “Search shops...” control on `/customer-home` with a focusable text input that supports typing (desktop and mobile) while keeping the same general layout (search on left, filter button on right).
+- Add accessible labeling and placeholder text for the search input (e.g., `aria-label="Search shops"` and placeholder “Search shops...”).
+- Implement client-side, case-insensitive filtering of currently displayed feed cards based on the search query, preserving existing category/location filtering behavior.
+- Add an in-field clear (X) control that appears only when the query is non-empty, clears the query, and returns focus to the input.
+- Display an English empty-state message when no items match the current search query.
 
-**User-visible outcome:** Expired ShopUpdates automatically disappear from the Customer Home Feed without any frontend changes, while expired records remain stored and are marked with an expiration timestamp.
+**User-visible outcome:** On the Customer Home Feed, users can tap/click into “Search shops...”, type to filter the feed immediately, clear the search with an in-field control, and see a clear message when there are no matches.

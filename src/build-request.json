@@ -1,72 +1,71 @@
 {
   "kind": "build_request",
-  "title": "Automatic expiry for ShopUpdates (deactivate at expiryDate)",
-  "priority": "normal",
+  "title": "Fix 'Search shops' so users can type and filter the customer feed",
+  "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Add a backend scheduled process that runs every 10 minutes and automatically expires ShopUpdates: find all ShopUpdates where isActive == true and expiryDate <= current canister time, then set isActive = false and set expiredAt = current timestamp. Expired ShopUpdates must not be deleted.",
-      "target": "backend",
+      "text": "Replace the non-editable \"Search shops...\" control on the Customer Home Feed page with a real text input that accepts typing and focus, while keeping the same general layout (search field on the left, filter button on the right).",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-6"
         ],
         "quotes": [
-          "Run every 10 minutes.\n\nQuery the ShopUpdates collection where:\n\nisActive == true\n\nexpiryDate <= currentTime\n\nFor each matched document:\n\nSet isActive = false\n\nAdd expiredAt = currentTimestamp\n\nDo NOT delete expired documents."
+          "Not able to type anything in Search shop"
         ]
       },
       "acceptanceCriteria": [
-        "Given at least one ShopUpdate with isActive=true and expiryDate in the past, within 10 minutes after the scheduled process runs, the ShopUpdate is persisted with isActive=false.",
-        "When a ShopUpdate is expired by the scheduled process, an expiredAt timestamp is set to the time the expiration ran.",
-        "No ShopUpdate records are removed from storage as part of expiry processing."
+        "On /customer-home, the search control is an <input> (or equivalent) that can be focused and accepts keyboard input on desktop and mobile.",
+        "Tapping/clicking the search field places the cursor in the field and the on-screen keyboard opens on mobile.",
+        "The search field has an accessible label (e.g., aria-label=\"Search shops\") and a visible placeholder text \"Search shops...\"."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Extend the backend ShopUpdate data model to store when an update was expired by adding an optional expiredAt field (null when not expired). Ensure any existing persisted ShopUpdates remain readable after upgrade and default to expiredAt = null if missing.",
-      "target": "backend",
+      "text": "Implement client-side filtering of the displayed feed items on the Customer Home Feed page based on the entered search text (case-insensitive), without requiring any backend changes.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-6"
         ],
         "quotes": [
-          "Add expiredAt = currentTimestamp"
+          "Not able to type anything in Search shop"
         ]
       },
       "acceptanceCriteria": [
-        "New ShopUpdates created after this change have expiredAt = null initially.",
-        "When a ShopUpdate is auto-expired, expiredAt becomes non-null.",
-        "After a canister upgrade, previously stored ShopUpdates (created before this feature) still load successfully and have expiredAt = null unless already expired by the new logic."
+        "When the user types in the search field, the list of rendered feed cards updates to show only items whose shop text matches the query (case-insensitive).",
+        "Clearing the search text restores the full set of items (subject to existing category/location filters).",
+        "If the current search yields zero matches, show a clear empty state message in English (e.g., \"No shops match your search.\")."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Ensure all backend APIs used for customer-facing feeds only return currently active, unexpired ShopUpdates (isActive == true AND expiryDate > current canister time), so expired updates are automatically removed from the Customer Home Feed without requiring frontend changes.",
-      "target": "backend",
+      "text": "Add an in-field clear control (e.g., an X button) for the search input that clears the query and returns focus to the input, and ensure it does not interfere with typing.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-6"
         ],
         "quotes": [
-          "Ensure expired updates are automatically removed from Customer Home Feed.\n   (Feed must only query where isActive == true AND expiryDate > current time)"
+          "Not able to type anything in Search shop"
         ]
       },
       "acceptanceCriteria": [
-        "Customer home feed backend method(s) return no ShopUpdates where isActive=false.",
-        "Customer home feed backend method(s) return no ShopUpdates where expiryDate <= current canister time.",
-        "If an update becomes expired (either by time check or the scheduled process), it no longer appears in the feed results."
+        "A clear control is only visible/enabled when the search query is non-empty.",
+        "Clicking/tapping the clear control empties the field and keeps focus in the input so the user can continue typing.",
+        "The clear control is keyboard accessible and has an accessible label (e.g., aria-label=\"Clear search\")."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor (all logic in backend/main.mo).",
-    "Do not delete expired ShopUpdate records; only mark them inactive and timestamp expiration.",
-    "Use English for any user-facing text."
+    "Do not edit files under frontend/src/components/ui (read-only UI component sources); compose using existing components or implement page-local markup/styling in the page file.",
+    "No backend changes are required for this fix."
   ],
   "nonGoals": [
-    "Adding an external database index (e.g., Firestore/SQL indexes) or any external cron/cloud function provider.",
-    "Building analytics/history UIs for expired ShopUpdates.",
-    "Real-time expiration updates via websockets/push mechanisms beyond the existing polling/query model."
+    "Implementing server-side search or adding new backend query endpoints for search.",
+    "Changing the existing category filter behavior beyond combining it with the new search filter.",
+    "Implementing the Filter button behavior (it can remain as-is unless already implemented elsewhere)."
   ],
   "imageRequirements": {
     "required": [],

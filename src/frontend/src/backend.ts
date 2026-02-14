@@ -194,6 +194,7 @@ export interface backendInterface {
     getCallerUserRole(): Promise<UserRole>;
     getCustomerFavorites(): Promise<Array<Shop>>;
     getCustomerHomeFeed(referenceLat: number, referenceLon: number): Promise<Array<FeedShopUpdate>>;
+    getExpiredUpdatesForShop(shopId: string): Promise<Array<ShopUpdate>>;
     getLastKnownLocation(): Promise<Location | null>;
     getOtpChallenge(phoneNumber: string): Promise<string>;
     getPendingNotifications(): Promise<Array<Notification>>;
@@ -508,6 +509,20 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.getCustomerHomeFeed(arg0, arg1);
             return from_candid_vec_n30(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getExpiredUpdatesForShop(arg0: string): Promise<Array<ShopUpdate>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getExpiredUpdatesForShop(arg0);
+                return from_candid_vec_n13(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getExpiredUpdatesForShop(arg0);
+            return from_candid_vec_n13(this._uploadFile, this._downloadFile, result);
         }
     }
     async getLastKnownLocation(): Promise<Location | null> {

@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useActor } from './useActor';
 import type { FeedShopUpdate } from '../backend';
 import { calculateDistance } from '../utils/geo';
+import { isActive } from '../utils/time';
 import type { Coordinates } from './useLocationPermission';
 import type { ShopCategory } from '../constants/shopCategories';
 
@@ -21,8 +22,12 @@ export function useCustomerHomeFeed(coordinates: Coordinates | null, category?: 
       // Call backend with coordinates - backend filters to active, unexpired, within 3km
       const feedUpdates = await actor.getCustomerHomeFeed(coordinates.latitude, coordinates.longitude);
 
+      // Safety filter: Remove any expired items (expiryDate <= current time)
+      // This ensures expired posts never appear even if scheduled job runs slightly later
+      const activeUpdates = feedUpdates.filter((update) => isActive(update.expiryDate));
+
       // Compute distance client-side for display
-      const updatesWithDistance = feedUpdates.map((update) => {
+      const updatesWithDistance = activeUpdates.map((update) => {
         const distance = calculateDistance(
           coordinates.latitude,
           coordinates.longitude,

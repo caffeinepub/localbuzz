@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { ShoppingBag, MapPin, Search, Filter, Loader2, X, Bell, BellOff } from 'lucide-react';
 import LocationStatusCard from '../components/LocationStatusCard';
 import ShopUpdatePostCard from '../components/ShopUpdatePostCard';
@@ -17,6 +18,8 @@ export default function CustomerHomeFeedPage() {
   const [selectedCategory, setSelectedCategory] = useState<ShopCategory | null>(null);
   const [notificationOptIn, setNotificationOptInState] = useState(getNotificationOptIn());
   const [hasAttemptedAutoRequest, setHasAttemptedAutoRequest] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
   
   const locationPermission = useLocationPermission();
   const { status, coordinates, isLoading: locationLoading, requestPermission } = locationPermission;
@@ -120,6 +123,22 @@ export default function CustomerHomeFeedPage() {
     }
   };
 
+  // Client-side search filtering
+  const filteredFeedItems = feedItems?.filter((item) => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      item.shopName.toLowerCase().includes(query) ||
+      item.title.toLowerCase().includes(query) ||
+      (item.description && item.description.toLowerCase().includes(query))
+    );
+  });
+
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    searchInputRef.current?.focus();
+  };
+
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
@@ -179,10 +198,28 @@ export default function CustomerHomeFeedPage() {
       <Card>
         <CardContent className="pt-6">
           <div className="flex gap-2">
-            <Button className="flex-1 justify-start" variant="outline" size="lg">
-              <Search className="mr-2 h-5 w-5" />
-              Search shops...
-            </Button>
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
+              <Input
+                ref={searchInputRef}
+                type="text"
+                placeholder="Search shops..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 pr-10 h-11 text-base"
+                aria-label="Search shops"
+              />
+              {searchQuery && (
+                <button
+                  onClick={handleClearSearch}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="Clear search"
+                  type="button"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              )}
+            </div>
             <Button variant="outline" size="lg">
               <Filter className="h-5 w-5" />
             </Button>
@@ -276,8 +313,8 @@ export default function CustomerHomeFeedPage() {
         {/* Feed Items */}
         {showFeed && !isLoadingFeed && (
           <div className="space-y-4">
-            {feedItems && feedItems.length > 0 ? (
-              feedItems.map((item) => (
+            {filteredFeedItems && filteredFeedItems.length > 0 ? (
+              filteredFeedItems.map((item) => (
                 <ShopUpdatePostCard
                   key={item.updateId}
                   item={item}
@@ -287,6 +324,12 @@ export default function CustomerHomeFeedPage() {
                   showFavoriteButton={true}
                 />
               ))
+            ) : feedItems && feedItems.length > 0 && searchQuery ? (
+              <Card className="bg-muted/30">
+                <CardHeader>
+                  <CardTitle className="text-lg">No shops match your search.</CardTitle>
+                </CardHeader>
+              </Card>
             ) : (
               <Card className="bg-muted/30">
                 <CardHeader>

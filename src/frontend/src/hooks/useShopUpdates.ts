@@ -20,6 +20,31 @@ export function useGetAllShopUpdatesForShop() {
   });
 }
 
+export function useGetExpiredUpdatesForShop() {
+  const { actor, isFetching: actorFetching } = useActor();
+  const { data: shops, isLoading: shopsLoading } = useGetShopsByOwner();
+
+  const shopId = shops && shops.length > 0 ? shops[0].shopId : null;
+
+  return useQuery<ShopUpdate[]>({
+    queryKey: ['shopUpdates', 'expired', shopId],
+    queryFn: async () => {
+      if (!actor || !shopId) return [];
+      const expired = await actor.getExpiredUpdatesForShop(shopId);
+      // Defensive client-side sort to ensure expiredAt descending with nulls last
+      return expired.sort((a, b) => {
+        if (a.expiredAt && b.expiredAt) {
+          return Number(b.expiredAt - a.expiredAt);
+        }
+        if (!a.expiredAt && b.expiredAt) return 1;
+        if (a.expiredAt && !b.expiredAt) return -1;
+        return 0;
+      });
+    },
+    enabled: !!actor && !actorFetching && !!shopId && !shopsLoading,
+  });
+}
+
 export function useGetShopUpdate(updateId: string) {
   const { actor, isFetching: actorFetching } = useActor();
 

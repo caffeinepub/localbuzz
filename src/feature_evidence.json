@@ -1,4 +1,65 @@
 {
   "kind": "feature_evidence_report",
-  "features": []
+  "features": [
+    {
+      "featureId": "feature-replace-the-non-editable-search-shops-control-on-the-customer-home-feed-page-with-a-real-text-input-that-accepts-typing-and-focus-while-keeping-the-same-general-layout-search-field-on-the-left-filter-button-on-the-right",
+      "featureTitle": "Replace the non-editable \"Search shops...\" control on the Customer Home Feed page with a real text input that accepts typing and focus, while keeping the same general layout (search field on the left, filter button on the right).",
+      "files": [
+        "frontend/src/pages/CustomerHomeFeedPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-client-side-filtering-of-the-displayed-feed-items-on-the-customer-home-feed-page-based-on-the-entered-search-text-case-insensitive-without-requiring-any-backend-changes",
+      "featureTitle": "Implement client-side filtering of the displayed feed items on the Customer Home Feed page based on the entered search text (case-insensitive), without requiring any backend changes.",
+      "files": [
+        "frontend/src/pages/CustomerHomeFeedPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-an-in-field-clear-control-e-g-an-x-button-for-the-search-input-that-clears-the-query-and-returns-focus-to-the-input-and-ensure-it-does-not-interfere-with-typing",
+      "featureTitle": "Add an in-field clear control (e.g., an X button) for the search input that clears the query and returns focus to the input, and ensure it does not interfere with typing.",
+      "files": [
+        "frontend/src/pages/CustomerHomeFeedPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
+      ],
+      "confidence": "high"
+    }
+  ]
 }

@@ -1,39 +1,39 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-14T07:44:46.800Z",
-  "summary": "Diff adds an `expiredAt` field to the ShopUpdate model and a migration to backfill existing records with `expiredAt = null`. It also introduces an `expireShopUpdates()` function (called on `postupgrade`) to mark some updates inactive and set `expiredAt`, but there is no clear evidence of a 10-minute scheduled process or of feed APIs filtering out expired updates as required.",
+  "generatedAt": "2026-02-14T08:31:16.951Z",
+  "summary": "The diff shows new search-related state (`searchQuery`), an input ref, and imports for `Input` and an `X` icon in `CustomerHomeFeedPage.tsx`, but the JSX/render logic is truncated, so the required input field, filtering behavior, clear control, and empty-state messaging cannot be verified from the provided diff summary.",
   "missing_requirements": [
     {
       "id": "REQ-1",
-      "requirement": "Add a backend scheduled process that runs every 10 minutes and automatically expires ShopUpdates (isActive == true and expiryDate <= current time) by setting isActive=false and expiredAt=current timestamp, without deleting records.",
-      "reason": "The diff shows `expireShopUpdates()` being invoked from `system func postupgrade()` only; there is no evidence of a recurring timer/scheduler that runs every 10 minutes. Additionally, the shown expiry condition uses `currentTime > shopUpdate.expiryDate` rather than `expiryDate <= currentTime`.",
+      "requirement": "Replace the non-editable \"Search shops...\" control on the Customer Home Feed page with a real text input that accepts typing and focus, with accessible label and placeholder, while keeping layout (search left, filter button right).",
+      "reason": "Although `Input` is imported and `searchQuery` state exists, the diff excerpt does not include the JSX showing an actual rendered <input> with placeholder \"Search shops...\" and an accessible label, nor does it show the layout with the filter button.",
       "evidence": [
-        "backend/main.mo"
+        "frontend/src/pages/CustomerHomeFeedPage.tsx (truncated)"
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "requirement": "Implement client-side filtering of rendered feed items based on entered search text (case-insensitive), restoring full list when cleared, and show an English empty state when no matches.",
+      "reason": "The diff excerpt does not show any code that filters `feedItems` based on `searchQuery`, nor any rendered empty-state message when there are zero matches.",
+      "evidence": [
+        "frontend/src/pages/CustomerHomeFeedPage.tsx (truncated)"
       ]
     },
     {
       "id": "REQ-3",
-      "requirement": "Ensure all backend APIs used for customer-facing feeds only return currently active, unexpired ShopUpdates (isActive == true AND expiryDate > current time).",
-      "reason": "The diff snippet defines `FeedShopUpdate` and adds expiry logic in `expireShopUpdates()`, but does not show any modifications to the customer feed query methods to filter on `(isActive == true AND expiryDate > now)` at query time.",
+      "requirement": "Add an in-field clear control (X button) that appears only when query is non-empty, clears the query, keeps focus in the input, and is keyboard accessible with an accessible label.",
+      "reason": "An `X` icon is imported and an input ref exists, but the diff excerpt does not show a rendered clear control, its conditional visibility, click/keyboard handlers, focus retention behavior, or accessible labeling (e.g., aria-label=\"Clear search\").",
       "evidence": [
-        "backend/main.mo"
+        "frontend/src/pages/CustomerHomeFeedPage.tsx (truncated)"
       ]
     }
   ],
-  "hallucinated_features": [
-    {
-      "description": "Expire ShopUpdates during canister `postupgrade` by calling `expireShopUpdates()`.",
-      "reason": "REQ-1 asks for a scheduled process running every 10 minutes; running expiry on `postupgrade` is not specified as a requirement (even if it may be useful).",
-      "evidence": [
-        "backend/main.mo"
-      ]
-    }
-  ],
-  "confidence": 0.68,
+  "hallucinated_features": [],
+  "confidence": 0.46,
   "changed_files": [
-    "backend/main.mo",
-    "backend/migration.mo",
+    "frontend-file-summaries.txt",
+    "frontend/src/pages/CustomerHomeFeedPage.tsx",
     "project_state.json"
   ]
 }
