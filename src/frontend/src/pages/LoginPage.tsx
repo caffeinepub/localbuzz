@@ -47,43 +47,43 @@ export default function LoginPage() {
 
   if (isInitializing) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
+      <div className="flex items-center justify-center min-h-screen bg-white">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-white p-4">
       <div className="w-full max-w-md space-y-8">
         {/* Logo and Title */}
-        <div className="text-center space-y-2">
+        <div className="text-center space-y-4">
           <div className="flex justify-center">
-            <div className="rounded-full bg-primary p-4 shadow-lg">
-              <MapPin className="h-12 w-12 text-primary-foreground" />
+            <div className="rounded-full bg-primary p-6 shadow-md">
+              <MapPin className="h-16 w-16 text-white" />
             </div>
           </div>
-          <h1 className="text-4xl font-bold text-foreground">LocalBuzz</h1>
-          <p className="text-muted-foreground">Connect with local businesses</p>
+          <h1 className="text-5xl font-bold text-foreground">LocalBuzz</h1>
+          <p className="text-lg text-muted-foreground">Connect with local businesses</p>
         </div>
 
         {/* Authentication Flow */}
         {!identity ? (
           <div className="space-y-4">
             <div className="text-center">
-              <p className="text-sm text-muted-foreground mb-4">
+              <p className="text-base text-muted-foreground mb-6">
                 First, authenticate with Internet Identity
               </p>
               <Button
                 onClick={handleInternetIdentityLogin}
                 disabled={isLoggingIn}
                 variant="default"
-                className="w-full max-w-md"
+                className="w-full"
                 size="lg"
               >
                 {isLoggingIn ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                     Connecting...
                   </>
                 ) : (
@@ -99,7 +99,7 @@ export default function LoginPage() {
         )}
 
         {/* Footer */}
-        <div className="text-center text-sm text-muted-foreground">
+        <div className="text-center text-sm text-muted-foreground pt-8">
           <p>
             Built with ❤️ using{' '}
             <a
@@ -108,7 +108,7 @@ export default function LoginPage() {
               )}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-primary hover:underline"
+              className="text-primary hover:underline font-medium"
             >
               caffeine.ai
             </a>

@@ -5,8 +5,10 @@ import LoginPage from './pages/LoginPage';
 import RoleSelectionPage from './pages/RoleSelectionPage';
 import ShopDashboardPage from './pages/ShopDashboardPage';
 import CustomerHomeFeedPage from './pages/CustomerHomeFeedPage';
+import CustomerProfilePage from './pages/CustomerProfilePage';
 import ShopRegistrationPage from './pages/ShopRegistrationPage';
 import ShopPostUpdatePage from './pages/ShopPostUpdatePage';
+import ShopUpdateDetailPage from './pages/ShopUpdateDetailPage';
 import MobileAppShell from './components/MobileAppShell';
 import { useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
@@ -107,6 +109,26 @@ const customerHomeRoute = createRoute({
   ),
 });
 
+const customerProfileRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/customer-profile',
+  component: () => (
+    <ProtectedRoute>
+      <CustomerProfilePage />
+    </ProtectedRoute>
+  ),
+});
+
+const shopUpdateDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/shop-update/$updateId',
+  component: () => (
+    <ProtectedRoute>
+      <ShopUpdateDetailPage />
+    </ProtectedRoute>
+  ),
+});
+
 // Create route tree
 const routeTree = rootRoute.addChildren([
   indexRoute,
@@ -115,6 +137,8 @@ const routeTree = rootRoute.addChildren([
   shopRegistrationRoute,
   shopPostUpdateRoute,
   customerHomeRoute,
+  customerProfileRoute,
+  shopUpdateDetailRoute,
 ]);
 
 // Create router

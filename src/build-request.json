@@ -1,89 +1,72 @@
 {
   "kind": "build_request",
-  "title": "Fix Role Selection buttons not navigating (Continue as Shop Owner / Continue as Customer)",
-  "priority": "high",
+  "title": "Automatic expiry for ShopUpdates (deactivate at expiryDate)",
+  "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-36",
-      "text": "Fix the Role Selection page so tapping/clicking \"Continue as Shop Owner\" or \"Continue as Customer\" always performs a visible action and navigates to the correct route (/shop-dashboard or /customer-home) instead of appearing to do nothing.",
-      "target": "frontend",
+      "id": "REQ-1",
+      "text": "Add a backend scheduled process that runs every 10 minutes and automatically expires ShopUpdates: find all ShopUpdates where isActive == true and expiryDate <= current canister time, then set isActive = false and set expiredAt = current timestamp. Expired ShopUpdates must not be deleted.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "recent-messages-user-1"
+          "msg-1"
         ],
         "quotes": [
-          "Either Continue as shop owner or continue as customer is not opening."
+          "Run every 10 minutes.\n\nQuery the ShopUpdates collection where:\n\nisActive == true\n\nexpiryDate <= currentTime\n\nFor each matched document:\n\nSet isActive = false\n\nAdd expiredAt = currentTimestamp\n\nDo NOT delete expired documents."
         ]
       },
       "acceptanceCriteria": [
-        "From /role-selection, clicking \"Continue as Shop Owner\" navigates to /shop-dashboard.",
-        "From /role-selection, clicking \"Continue as Customer\" navigates to /customer-home.",
-        "While the selection is being processed, the selected button shows a loading state and repeated taps do not trigger duplicate actions.",
-        "If navigation cannot proceed for any reason, show an English, user-visible error message (not only console logging)."
+        "Given at least one ShopUpdate with isActive=true and expiryDate in the past, within 10 minutes after the scheduled process runs, the ShopUpdate is persisted with isActive=false.",
+        "When a ShopUpdate is expired by the scheduled process, an expiredAt timestamp is set to the time the expiration ran.",
+        "No ShopUpdate records are removed from storage as part of expiry processing."
       ]
     },
     {
-      "id": "REQ-37",
-      "text": "Add robust handling on the Role Selection page for missing OTP session phone number (localStorage cleared, etc.): show an English message explaining the session is incomplete and route the user back to the login page to re-verify OTP.",
-      "target": "frontend",
+      "id": "REQ-2",
+      "text": "Extend the backend ShopUpdate data model to store when an update was expired by adding an optional expiredAt field (null when not expired). Ensure any existing persisted ShopUpdates remain readable after upgrade and default to expiredAt = null if missing.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "recent-messages-user-1"
+          "msg-1"
         ],
         "quotes": [
-          "Either Continue as shop owner or continue as customer is not opening."
+          "Add expiredAt = currentTimestamp"
         ]
       },
       "acceptanceCriteria": [
-        "If the user taps a role and the OTP phone number is missing, the UI shows an English error (e.g., \"Your session expired. Please log in again.\") and navigates to /.",
-        "The app does not silently fail with only console errors in this case."
+        "New ShopUpdates created after this change have expiredAt = null initially.",
+        "When a ShopUpdate is auto-expired, expiredAt becomes non-null.",
+        "After a canister upgrade, previously stored ShopUpdates (created before this feature) still load successfully and have expiredAt = null unless already expired by the new logic."
       ]
     },
     {
-      "id": "REQ-38",
-      "text": "Ensure Role Selection does not block navigation on a backend profile-save failure: if saving the profile fails, still route the user to the selected destination and show an English non-blocking warning that profile sync failed and can be retried later.",
-      "target": "frontend",
+      "id": "REQ-3",
+      "text": "Ensure all backend APIs used for customer-facing feeds only return currently active, unexpired ShopUpdates (isActive == true AND expiryDate > current canister time), so expired updates are automatically removed from the Customer Home Feed without requiring frontend changes.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "recent-messages-user-1"
+          "msg-1"
         ],
         "quotes": [
-          "Either Continue as shop owner or continue as customer is not opening."
+          "Ensure expired updates are automatically removed from Customer Home Feed.\n   (Feed must only query where isActive == true AND expiryDate > current time)"
         ]
       },
       "acceptanceCriteria": [
-        "If saveCallerUserProfile fails (trap/network/actor unavailable), the app still navigates to the selected route.",
-        "An English warning message is shown indicating the profile could not be saved.",
-        "The role selection buttons remain usable after a failure (no permanent disabled state)."
-      ]
-    },
-    {
-      "id": "REQ-39",
-      "text": "Fix the Role Selection auto-redirect logic so it does not incorrectly force users to /customer-home on load regardless of their intent; only auto-redirect when a previously chosen role is unambiguous, otherwise keep the user on the Role Selection screen.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "recent-messages-user-1"
-        ],
-        "quotes": [
-          "Either Continue as shop owner or continue as customer is not opening."
-        ]
-      },
-      "acceptanceCriteria": [
-        "Opening /role-selection does not immediately redirect the user away unless the app can confidently determine the user’s role selection state.",
-        "The Role Selection screen remains reachable after login when role is not clearly set."
+        "Customer home feed backend method(s) return no ShopUpdates where isActive=false.",
+        "Customer home feed backend method(s) return no ShopUpdates where expiryDate <= current canister time.",
+        "If an update becomes expired (either by time check or the scheduled process), it no longer appears in the feed results."
       ]
     }
   ],
   "constraints": [
-    "Do not edit files under frontend/src/components/ui (shadcn components are read-only and must be composed).",
-    "Do not modify immutable frontend hook files listed in SYSTEM_CONTEXT (e.g., frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx).",
-    "Keep backend as a single Motoko actor in backend/main.mo; only add a migration if an actual stable-state change is required."
+    "Backend must remain a single Motoko actor (all logic in backend/main.mo).",
+    "Do not delete expired ShopUpdate records; only mark them inactive and timestamp expiration.",
+    "Use English for any user-facing text."
   ],
   "nonGoals": [
-    "Adding new roles/permissions to the backend authorization system beyond what is required to make role selection navigation work.",
-    "Implementing third-party auth providers or any non-Internet-Identity authentication.",
-    "Adding new product features unrelated to role selection navigation (e.g., new pages, new feed behavior)."
+    "Adding an external database index (e.g., Firestore/SQL indexes) or any external cron/cloud function provider.",
+    "Building analytics/history UIs for expired ShopUpdates.",
+    "Real-time expiration updates via websockets/push mechanisms beyond the existing polling/query model."
   ],
   "imageRequirements": {
     "required": [],

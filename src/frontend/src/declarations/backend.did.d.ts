@@ -14,43 +14,62 @@ export type ExternalBlob = Uint8Array;
 export interface FeedShopUpdate {
   'title' : string,
   'shopCategory' : string,
-  'shopId' : Principal,
+  'shopId' : string,
+  'ownerId' : Principal,
   'expiryDate' : Time,
-  'shopLocation' : Location,
+  'createdAt' : Time,
   'description' : [] | [string],
+  'isActive' : boolean,
   'updateId' : string,
-  'timestamp' : Time,
   'shopName' : string,
   'image' : [] | [ExternalBlob],
+  'location' : GeoPoint,
 }
+export interface GeoPoint { 'latitude' : number, 'longitude' : number }
 export interface Location {
   'latitude' : number,
   'longitude' : number,
   'timestamp' : Time,
 }
+export interface Notification {
+  'id' : NotificationId,
+  'shopId' : string,
+  'createdAt' : Time,
+  'recipient' : Principal,
+  'distance' : number,
+  'isActive' : boolean,
+  'shopUpdateId' : string,
+}
+export type NotificationId = string;
 export interface Shop {
-  'latitude' : number,
-  'owner' : Principal,
-  'name' : string,
+  'shopImage' : ExternalBlob,
+  'shopId' : string,
+  'ownerId' : Principal,
   'createdAt' : Time,
   'lastUpdated' : Time,
-  'longitude' : number,
+  'isOpen' : boolean,
   'address' : string,
+  'shopName' : string,
   'category' : string,
-  'image' : ExternalBlob,
+  'location' : GeoPoint,
 }
 export interface ShopUpdate {
   'title' : string,
-  'shopId' : Principal,
+  'expiredAt' : [] | [Time],
+  'shopId' : string,
+  'ownerId' : Principal,
   'expiryDate' : Time,
-  'shopLocation' : Location,
+  'createdAt' : Time,
   'description' : [] | [string],
-  'timestamp' : Time,
+  'isActive' : boolean,
+  'updateId' : string,
   'image' : [] | [ExternalBlob],
+  'location' : GeoPoint,
 }
 export type Time = bigint;
 export interface UserProfile {
   'lastKnownLocation' : [] | [Location],
+  'name' : [] | [string],
   'createdAt' : Time,
   'role' : UserRole,
   'lastUpdated' : Time,
@@ -87,33 +106,46 @@ export interface _SERVICE {
   >,
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
+  'acknowledgeNotifications' : ActorMethod<[Array<NotificationId>], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'createShopUpdate' : ActorMethod<
-    [Principal, string, [] | [string], [] | [ExternalBlob], Time],
+    [string, string, [] | [string], [] | [ExternalBlob], Time],
     string
   >,
   'deleteShopUpdate' : ActorMethod<[string], undefined>,
+  'favoriteShop' : ActorMethod<[string], undefined>,
   'getAllActiveShopUpdates' : ActorMethod<[], Array<ShopUpdate>>,
   'getAllProfilesByRole' : ActorMethod<[UserRole], Array<UserProfile>>,
-  'getAllShopUpdatesForShop' : ActorMethod<[Principal], Array<ShopUpdate>>,
+  'getAllShopUpdatesForShop' : ActorMethod<[string], Array<ShopUpdate>>,
   'getAllShops' : ActorMethod<[], Array<Shop>>,
+  'getAllUsers' : ActorMethod<[], Array<UserProfile>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
-  'getCustomerHomeFeed' : ActorMethod<[], Array<FeedShopUpdate>>,
+  'getCustomerFavorites' : ActorMethod<[], Array<Shop>>,
+  'getCustomerHomeFeed' : ActorMethod<[number, number], Array<FeedShopUpdate>>,
   'getLastKnownLocation' : ActorMethod<[], [] | [Location]>,
   'getOtpChallenge' : ActorMethod<[string], string>,
-  'getShop' : ActorMethod<[Principal], [] | [Shop]>,
+  'getPendingNotifications' : ActorMethod<[], Array<Notification>>,
+  'getShopById' : ActorMethod<[string], [] | [Shop]>,
+  'getShopOpenStatus' : ActorMethod<[string], boolean>,
   'getShopUpdate' : ActorMethod<[string], [] | [ShopUpdate]>,
+  'getShopsByOwner' : ActorMethod<[Principal], Array<Shop>>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
+  'isShopFavoritedByCaller' : ActorMethod<[string], boolean>,
   'registerShop' : ActorMethod<
-    [string, string, string, number, number, ExternalBlob],
+    [string, string, string, GeoPoint, ExternalBlob],
     Shop
   >,
-  'saveCallerUserProfile' : ActorMethod<[string, UserRole], undefined>,
+  'saveCallerUserProfile' : ActorMethod<
+    [[] | [string], string, UserRole],
+    undefined
+  >,
   'setLastKnownLocation' : ActorMethod<[Location], undefined>,
+  'setShopOpenStatus' : ActorMethod<[string, boolean], undefined>,
+  'unfavoriteShop' : ActorMethod<[string], undefined>,
   'updateShop' : ActorMethod<
-    [string, string, string, number, number, ExternalBlob],
+    [string, string, string, string, GeoPoint, ExternalBlob],
     Shop
   >,
   'updateShopUpdate' : ActorMethod<

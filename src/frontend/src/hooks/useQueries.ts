@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import type { UserProfile, Location, UserRole } from '../backend';
+import type { UserProfile, Location, UserRole, Notification, NotificationId } from '../backend';
 
 export function useGetCallerUserProfile() {
   const { actor, isFetching: actorFetching } = useActor();
@@ -27,9 +27,17 @@ export function useSaveCallerUserProfile() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ phoneNumber, role }: { phoneNumber: string; role: UserRole }) => {
+    mutationFn: async ({ 
+      name, 
+      phoneNumber, 
+      role 
+    }: { 
+      name?: string | null; 
+      phoneNumber: string; 
+      role: UserRole 
+    }) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.saveCallerUserProfile(phoneNumber, role);
+      return actor.saveCallerUserProfile(name ?? null, phoneNumber, role);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
@@ -63,5 +71,34 @@ export function useGetLastKnownLocation() {
       return actor.getLastKnownLocation();
     },
     enabled: !!actor && !actorFetching,
+  });
+}
+
+export function useGetPendingNotifications() {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery<Notification[]>({
+    queryKey: ['pendingNotifications'],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.getPendingNotifications();
+    },
+    enabled: !!actor && !actorFetching,
+    refetchInterval: 30000, // Poll every 30 seconds
+  });
+}
+
+export function useAcknowledgeNotifications() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (notificationIds: NotificationId[]) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.acknowledgeNotifications(notificationIds);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pendingNotifications'] });
+    },
   });
 }

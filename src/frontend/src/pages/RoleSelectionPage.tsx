@@ -65,6 +65,7 @@ export default function RoleSelectionPage() {
     try {
       // Attempt to save profile
       await saveProfileMutation.mutateAsync({
+        name: null,
         phoneNumber,
         role: UserRole.user,
       });
@@ -109,8 +110,8 @@ export default function RoleSelectionPage() {
   return (
     <div className="space-y-6 py-8">
       <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold text-foreground">Choose Your Role</h1>
-        <p className="text-muted-foreground">How would you like to use LocalBuzz?</p>
+        <h1 className="text-4xl font-bold text-foreground">Choose Your Role</h1>
+        <p className="text-lg text-muted-foreground">How would you like to use LocalBuzz?</p>
       </div>
 
       {errorMessage && (
@@ -120,35 +121,35 @@ export default function RoleSelectionPage() {
         </Alert>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2">
         {/* Shop Owner Card */}
         <Card
-          className={`cursor-pointer transition-all hover:shadow-lg ${
-            processingRole === 'shop' ? 'ring-2 ring-primary' : ''
+          className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
+            processingRole === 'shop' ? 'ring-2 ring-primary border-primary' : 'border-border hover:border-primary/50'
           } ${processingRole !== null ? 'opacity-75' : ''}`}
           onClick={() => processingRole === null && handleRoleSelect('shop')}
         >
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
-              <div className="rounded-full bg-primary/10 p-6">
-                <Store className="h-12 w-12 text-primary" />
+              <div className="rounded-full bg-primary/10 p-8">
+                <Store className="h-16 w-16 text-primary" />
               </div>
             </div>
             <CardTitle className="text-2xl">Shop Owner</CardTitle>
-            <CardDescription>Manage your business and reach local customers</CardDescription>
+            <CardDescription className="text-base">Manage your business and reach local customers</CardDescription>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-2 text-sm text-muted-foreground mb-4">
+            <ul className="space-y-3 text-base text-muted-foreground mb-6">
               <li className="flex items-center gap-2">
-                <ArrowRight className="h-4 w-4 text-primary" />
+                <ArrowRight className="h-5 w-5 text-primary flex-shrink-0" />
                 Create and manage your shop
               </li>
               <li className="flex items-center gap-2">
-                <ArrowRight className="h-4 w-4 text-primary" />
+                <ArrowRight className="h-5 w-5 text-primary flex-shrink-0" />
                 Post updates and offers
               </li>
               <li className="flex items-center gap-2">
-                <ArrowRight className="h-4 w-4 text-primary" />
+                <ArrowRight className="h-5 w-5 text-primary flex-shrink-0" />
                 Connect with customers
               </li>
             </ul>
@@ -163,7 +164,7 @@ export default function RoleSelectionPage() {
             >
               {processingRole === 'shop' ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   Setting up...
                 </>
               ) : (
@@ -175,39 +176,38 @@ export default function RoleSelectionPage() {
 
         {/* Customer Card */}
         <Card
-          className={`cursor-pointer transition-all hover:shadow-lg ${
-            processingRole === 'customer' ? 'ring-2 ring-primary' : ''
+          className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
+            processingRole === 'customer' ? 'ring-2 ring-primary border-primary' : 'border-border hover:border-primary/50'
           } ${processingRole !== null ? 'opacity-75' : ''}`}
           onClick={() => processingRole === null && handleRoleSelect('customer')}
         >
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
-              <div className="rounded-full bg-accent/10 p-6">
-                <ShoppingBag className="h-12 w-12 text-accent-foreground" />
+              <div className="rounded-full bg-primary/10 p-8">
+                <ShoppingBag className="h-16 w-16 text-primary" />
               </div>
             </div>
             <CardTitle className="text-2xl">Customer</CardTitle>
-            <CardDescription>Discover and support local businesses</CardDescription>
+            <CardDescription className="text-base">Discover and support local businesses</CardDescription>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-2 text-sm text-muted-foreground mb-4">
+            <ul className="space-y-3 text-base text-muted-foreground mb-6">
               <li className="flex items-center gap-2">
-                <ArrowRight className="h-4 w-4 text-accent-foreground" />
+                <ArrowRight className="h-5 w-5 text-primary flex-shrink-0" />
                 Browse local shops
               </li>
               <li className="flex items-center gap-2">
-                <ArrowRight className="h-4 w-4 text-accent-foreground" />
+                <ArrowRight className="h-5 w-5 text-primary flex-shrink-0" />
                 Get exclusive deals
               </li>
               <li className="flex items-center gap-2">
-                <ArrowRight className="h-4 w-4 text-accent-foreground" />
+                <ArrowRight className="h-5 w-5 text-primary flex-shrink-0" />
                 Stay updated on offers
               </li>
             </ul>
             <Button
               className="w-full"
               size="lg"
-              variant="secondary"
               disabled={processingRole !== null}
               onClick={(e) => {
                 e.stopPropagation();
@@ -216,7 +216,7 @@ export default function RoleSelectionPage() {
             >
               {processingRole === 'customer' ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   Setting up...
                 </>
               ) : (

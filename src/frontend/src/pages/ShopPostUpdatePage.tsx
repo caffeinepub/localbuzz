@@ -101,7 +101,7 @@ export default function ShopPostUpdatePage() {
     if (!validateForm()) return;
 
     try {
-      let imageBlob: ExternalBlob | null = null;
+      let imageBlob: ExternalBlob | undefined = undefined;
 
       if (imageFile) {
         // Convert file to bytes
@@ -118,7 +118,7 @@ export default function ShopPostUpdatePage() {
 
       await createUpdate.mutateAsync({
         title: title.trim(),
-        description: description.trim() || null,
+        description: description.trim() || undefined,
         image: imageBlob,
         expiryDate,
       });
@@ -145,11 +145,11 @@ export default function ShopPostUpdatePage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-          <Megaphone className="h-8 w-8 text-primary" />
+        <h1 className="text-4xl font-bold text-foreground flex items-center gap-3">
+          <Megaphone className="h-10 w-10 text-primary" />
           Post Update
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-lg text-muted-foreground">
           Share news, offers, or announcements with your customers
         </p>
       </div>
@@ -158,7 +158,7 @@ export default function ShopPostUpdatePage() {
       {successMessage && (
         <Alert className="bg-primary/10 border-primary/20">
           <CheckCircle className="h-4 w-4 text-primary" />
-          <AlertDescription className="text-primary">{successMessage}</AlertDescription>
+          <AlertDescription className="text-primary text-base">{successMessage}</AlertDescription>
         </Alert>
       )}
 
@@ -166,15 +166,15 @@ export default function ShopPostUpdatePage() {
       {validationError && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{validationError}</AlertDescription>
+          <AlertDescription className="text-base">{validationError}</AlertDescription>
         </Alert>
       )}
 
       {/* Post Form */}
       <Card>
         <CardHeader>
-          <CardTitle>Update Details</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-xl">Update Details</CardTitle>
+          <CardDescription className="text-base">
             Create an update to inform customers about your shop
           </CardDescription>
         </CardHeader>
@@ -182,7 +182,7 @@ export default function ShopPostUpdatePage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Title */}
             <div className="space-y-2">
-              <Label htmlFor="title">Title *</Label>
+              <Label htmlFor="title" className="text-base">Title *</Label>
               <Input
                 id="title"
                 type="text"
@@ -192,15 +192,16 @@ export default function ShopPostUpdatePage() {
                 disabled={isSubmitting}
                 maxLength={100}
                 required
+                className="h-12 text-base"
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 {title.length}/100 characters
               </p>
             </div>
 
             {/* Description */}
             <div className="space-y-2">
-              <Label htmlFor="description">Description (Optional)</Label>
+              <Label htmlFor="description" className="text-base">Description (Optional)</Label>
               <Textarea
                 id="description"
                 placeholder="Add more details about your update..."
@@ -208,12 +209,13 @@ export default function ShopPostUpdatePage() {
                 onChange={(e) => setDescription(e.target.value)}
                 disabled={isSubmitting}
                 rows={4}
+                className="text-base"
               />
             </div>
 
             {/* Image Upload */}
             <div className="space-y-2">
-              <Label htmlFor="updateImage">Image (Optional)</Label>
+              <Label htmlFor="updateImage" className="text-base">Image (Optional)</Label>
               <div className="space-y-4">
                 {imagePreview && (
                   <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-muted">
@@ -231,11 +233,11 @@ export default function ShopPostUpdatePage() {
                     accept="image/*"
                     onChange={handleImageChange}
                     disabled={isSubmitting}
-                    className="flex-1"
+                    className="flex-1 h-12"
                   />
                   <Upload className="h-5 w-5 text-muted-foreground" />
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   Upload an image to make your update more engaging (max 5MB)
                 </p>
               </div>
@@ -243,8 +245,8 @@ export default function ShopPostUpdatePage() {
 
             {/* Expiry Options */}
             <div className="space-y-3">
-              <Label>Expiry *</Label>
-              <div className="space-y-2">
+              <Label className="text-base">Expiry *</Label>
+              <div className="space-y-3">
                 <button
                   type="button"
                   onClick={() => setExpiryOption('today')}
@@ -255,8 +257,8 @@ export default function ShopPostUpdatePage() {
                       : 'border-border hover:border-primary/50'
                   }`}
                 >
-                  <div className="font-medium">Today</div>
-                  <div className="text-sm text-muted-foreground">Expires at end of today</div>
+                  <div className="font-medium text-base">Today</div>
+                  <div className="text-sm text-muted-foreground">Expires at end of day</div>
                 </button>
 
                 <button
@@ -269,7 +271,7 @@ export default function ShopPostUpdatePage() {
                       : 'border-border hover:border-primary/50'
                   }`}
                 >
-                  <div className="font-medium">2 Days</div>
+                  <div className="font-medium text-base">2 Days</div>
                   <div className="text-sm text-muted-foreground">Expires in 48 hours</div>
                 </button>
 
@@ -283,7 +285,7 @@ export default function ShopPostUpdatePage() {
                       : 'border-border hover:border-primary/50'
                   }`}
                 >
-                  <div className="font-medium flex items-center gap-2">
+                  <div className="font-medium text-base flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
                     Custom Date
                   </div>
@@ -291,14 +293,14 @@ export default function ShopPostUpdatePage() {
                 </button>
 
                 {expiryOption === 'custom' && (
-                  <div className="pl-4 pt-2">
+                  <div className="pl-4">
                     <Input
                       type="date"
                       value={customDate}
                       onChange={(e) => setCustomDate(e.target.value)}
-                      disabled={isSubmitting}
                       min={today}
-                      required
+                      disabled={isSubmitting}
+                      className="h-12 text-base"
                     />
                   </div>
                 )}
@@ -308,7 +310,7 @@ export default function ShopPostUpdatePage() {
             {/* Upload Progress */}
             {uploadProgress > 0 && uploadProgress < 100 && (
               <div className="space-y-2">
-                <div className="flex justify-between text-sm">
+                <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Uploading image...</span>
                   <span className="font-medium">{uploadProgress}%</span>
                 </div>
@@ -324,18 +326,18 @@ export default function ShopPostUpdatePage() {
             {/* Submit Button */}
             <Button
               type="submit"
-              disabled={isSubmitting}
               className="w-full"
               size="lg"
+              disabled={isSubmitting}
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {uploadProgress > 0 ? `Uploading ${uploadProgress}%...` : 'Posting...'}
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Posting...
                 </>
               ) : (
                 <>
-                  <Megaphone className="mr-2 h-4 w-4" />
+                  <Megaphone className="mr-2 h-5 w-5" />
                   Post Update
                 </>
               )}

@@ -1,18 +1,19 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Store, Plus, Edit, Calendar, Image as ImageIcon } from 'lucide-react';
+import { Store, Plus, Edit, Calendar, Loader2 } from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';
-import { useGetCallerShop } from '../hooks/useShop';
-import { useGetShopUpdates } from '../hooks/useShopUpdates';
+import { useGetShopsByOwner, useSetShopOpenStatus } from '../hooks/useShop';
+import { useGetAllShopUpdatesForShop } from '../hooks/useShopUpdates';
 import ShopOpenClosedToggle from '../components/ShopOpenClosedToggle';
 import { isActive, formatTime } from '../utils/time';
 
 export default function ShopDashboardPage() {
   const navigate = useNavigate();
-  const { data: shop, isLoading: shopLoading } = useGetCallerShop();
-  const { data: updates, isLoading: updatesLoading } = useGetShopUpdates();
-  const [isShopOpen, setIsShopOpen] = useState(true);
+  const { data: shops, isLoading: shopLoading } = useGetShopsByOwner();
+  const shop = shops && shops.length > 0 ? shops[0] : null;
+  const { data: updates, isLoading: updatesLoading } = useGetAllShopUpdatesForShop();
+  const setShopOpenStatus = useSetShopOpenStatus();
 
   const handleRegisterShop = () => {
     navigate({ to: '/shop-registration' });
@@ -20,6 +21,16 @@ export default function ShopDashboardPage() {
 
   const handlePostUpdate = () => {
     navigate({ to: '/shop-post-update' });
+  };
+
+  const handleToggleShopStatus = async (isOpen: boolean) => {
+    if (!shop) return;
+    
+    try {
+      await setShopOpenStatus.mutateAsync({ shopId: shop.shopId, isOpen });
+    } catch (error: any) {
+      console.error('Failed to update shop status:', error);
+    }
   };
 
   const hasShop = !shopLoading && !!shop;
@@ -32,22 +43,22 @@ export default function ShopDashboardPage() {
     <div className="space-y-6">
       {/* Welcome Section */}
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-          <Store className="h-8 w-8 text-primary" />
+        <h1 className="text-4xl font-bold text-foreground flex items-center gap-3">
+          <Store className="h-10 w-10 text-primary" />
           Shop Dashboard
         </h1>
-        <p className="text-muted-foreground">Manage your business and reach local customers</p>
+        <p className="text-lg text-muted-foreground">Manage your business and reach local customers</p>
       </div>
 
       {/* Shop Registration CTA or Edit Button */}
       {!shopLoading && !shop && (
         <Card className="border-primary/50 bg-primary/5">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg">
               <Store className="h-5 w-5 text-primary" />
               Get Started
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-base">
               Register your shop to start reaching customers in your area
             </CardDescription>
           </CardHeader>
@@ -65,11 +76,11 @@ export default function ShopDashboardPage() {
           <CardHeader>
             <div className="flex items-start justify-between">
               <div className="space-y-1">
-                <CardTitle className="flex items-center gap-2">
-                  <Store className="h-5 w-5 text-primary" />
-                  {shop.name}
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <Store className="h-6 w-6 text-primary" />
+                  {shop.shopName}
                 </CardTitle>
-                <CardDescription>{shop.category}</CardDescription>
+                <CardDescription className="text-base">{shop.category}</CardDescription>
               </div>
               <Button onClick={handleRegisterShop} variant="outline" size="sm">
                 <Edit className="mr-2 h-4 w-4" />
@@ -93,7 +104,7 @@ export default function ShopDashboardPage() {
             Post Update
           </Button>
           {!hasShop && !shopLoading && (
-            <p className="text-xs text-muted-foreground text-center mt-2">
+            <p className="text-sm text-muted-foreground text-center mt-3">
               Register your shop to post updates
             </p>
           )}
@@ -103,17 +114,17 @@ export default function ShopDashboardPage() {
       {/* Open/Closed Toggle */}
       <Card>
         <CardHeader>
-          <CardTitle>Shop Status</CardTitle>
-          <CardDescription>Let customers know if you're open or closed</CardDescription>
+          <CardTitle className="text-lg">Shop Status</CardTitle>
+          <CardDescription className="text-base">Let customers know if you're open or closed</CardDescription>
         </CardHeader>
         <CardContent>
           <ShopOpenClosedToggle
-            isOpen={isShopOpen}
-            onChange={setIsShopOpen}
-            disabled={!hasShop}
+            isOpen={shop?.isOpen ?? false}
+            onChange={handleToggleShopStatus}
+            disabled={!hasShop || setShopOpenStatus.isPending}
           />
           {!hasShop && !shopLoading && (
-            <p className="text-xs text-muted-foreground text-center mt-2">
+            <p className="text-sm text-muted-foreground text-center mt-3">
               Register your shop to update status
             </p>
           )}
@@ -123,29 +134,29 @@ export default function ShopDashboardPage() {
       {/* My Active Posts */}
       <Card>
         <CardHeader>
-          <CardTitle>My Active Posts</CardTitle>
-          <CardDescription>Updates currently visible to customers</CardDescription>
+          <CardTitle className="text-lg">My Active Posts</CardTitle>
+          <CardDescription className="text-base">Updates currently visible to customers</CardDescription>
         </CardHeader>
         <CardContent>
           {updatesLoading ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <p>Loading updates...</p>
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : activeUpdates.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <p>No active posts yet</p>
-              <p className="text-sm mt-1">Click "Post Update" to create your first post</p>
+              <p className="text-base">No active posts yet</p>
+              <p className="text-sm mt-2">Click "Post Update" to create your first post</p>
             </div>
           ) : (
             <div className="space-y-3">
               {activeUpdates.map((update, index) => (
                 <div
                   key={index}
-                  className="p-4 rounded-lg border bg-card hover:bg-accent/5 transition-colors"
+                  className="p-4 rounded-lg border bg-white hover:shadow-sm transition-shadow"
                 >
                   <div className="flex gap-3">
                     {update.image && (
-                      <div className="flex-shrink-0 w-20 h-20 rounded-md overflow-hidden bg-muted">
+                      <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-muted">
                         <img
                           src={update.image.getDirectURL()}
                           alt={update.title}
@@ -154,17 +165,15 @@ export default function ShopDashboardPage() {
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-foreground truncate">{update.title}</h3>
+                      <h3 className="font-semibold text-base text-foreground truncate">{update.title}</h3>
                       {update.description && (
-                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                        <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
                           {update.description}
                         </p>
                       )}
-                      <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          Expires: {formatTime(update.expiryDate)}
-                        </span>
+                      <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+                        <Calendar className="h-3 w-3" />
+                        <span>Expires: {formatTime(update.expiryDate)}</span>
                       </div>
                     </div>
                   </div>
@@ -176,58 +185,48 @@ export default function ShopDashboardPage() {
       </Card>
 
       {/* Expired Posts */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Expired Posts</CardTitle>
-          <CardDescription>Past updates no longer visible to customers</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {updatesLoading ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <p>Loading updates...</p>
-            </div>
-          ) : expiredUpdates.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <p>No expired posts</p>
-            </div>
-          ) : (
+      {expiredUpdates.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Expired Posts</CardTitle>
+            <CardDescription className="text-base">Past updates no longer visible to customers</CardDescription>
+          </CardHeader>
+          <CardContent>
             <div className="space-y-3">
               {expiredUpdates.map((update, index) => (
                 <div
                   key={index}
-                  className="p-4 rounded-lg border bg-muted/30 opacity-75"
+                  className="p-4 rounded-lg border bg-muted/30 opacity-60"
                 >
                   <div className="flex gap-3">
                     {update.image && (
-                      <div className="flex-shrink-0 w-20 h-20 rounded-md overflow-hidden bg-muted">
+                      <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-muted">
                         <img
                           src={update.image.getDirectURL()}
                           alt={update.title}
-                          className="w-full h-full object-cover grayscale"
+                          className="w-full h-full object-cover"
                         />
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-foreground truncate">{update.title}</h3>
+                      <h3 className="font-semibold text-base text-foreground truncate">{update.title}</h3>
                       {update.description && (
-                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                        <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
                           {update.description}
                         </p>
                       )}
-                      <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          Expired: {formatTime(update.expiryDate)}
-                        </span>
+                      <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+                        <Calendar className="h-3 w-3" />
+                        <span>Expired: {formatTime(update.expiryDate)}</span>
                       </div>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

@@ -1,40 +1,39 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-13T16:34:38.355Z",
-  "summary": "RoleSelectionPage was updated to guard against duplicate taps, show user-visible English error/warning messages, handle missing OTP phone number by clearing session and routing to login, navigate to /shop-dashboard or /customer-home, and adjust auto-redirect to only occur when a persisted role choice exists in localStorage. MobileAppShell was modified to clear the persisted role choice on logout and to hide bottom navigation on /role-selection.",
+  "generatedAt": "2026-02-14T07:44:46.800Z",
+  "summary": "Diff adds an `expiredAt` field to the ShopUpdate model and a migration to backfill existing records with `expiredAt = null`. It also introduces an `expireShopUpdates()` function (called on `postupgrade`) to mark some updates inactive and set `expiredAt`, but there is no clear evidence of a 10-minute scheduled process or of feed APIs filtering out expired updates as required.",
   "missing_requirements": [
     {
-      "id": "REQ-36",
-      "requirement": "If navigation cannot proceed for any reason, show an English, user-visible error message (not only console logging).",
-      "reason": "The diff shows user-visible messaging for missing OTP session and for profile-save failure, but does not show any explicit handling for navigation failures (e.g., navigate() errors). With the provided diff summary, there is no evidence of a user-visible error specifically tied to navigation failing.",
+      "id": "REQ-1",
+      "requirement": "Add a backend scheduled process that runs every 10 minutes and automatically expires ShopUpdates (isActive == true and expiryDate <= current time) by setting isActive=false and expiredAt=current timestamp, without deleting records.",
+      "reason": "The diff shows `expireShopUpdates()` being invoked from `system func postupgrade()` only; there is no evidence of a recurring timer/scheduler that runs every 10 minutes. Additionally, the shown expiry condition uses `currentTime > shopUpdate.expiryDate` rather than `expiryDate <= currentTime`.",
       "evidence": [
-        "frontend/src/pages/RoleSelectionPage.tsx (truncated)"
+        "backend/main.mo"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "requirement": "Ensure all backend APIs used for customer-facing feeds only return currently active, unexpired ShopUpdates (isActive == true AND expiryDate > current time).",
+      "reason": "The diff snippet defines `FeedShopUpdate` and adds expiry logic in `expireShopUpdates()`, but does not show any modifications to the customer feed query methods to filter on `(isActive == true AND expiryDate > now)` at query time.",
+      "evidence": [
+        "backend/main.mo"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Persisting role choice in localStorage (ROLE_CHOICE_KEY) and clearing it on logout; using it to drive auto-redirect behavior.",
-      "reason": "The BuildRequest focuses on fixing role-selection button navigation/UX, error handling, and correct auto-redirect logic based on unambiguous prior role. It does not explicitly request adding persistence of role choice in localStorage or clearing it on logout as a feature; this is additional behavior beyond the stated requirements.",
+      "description": "Expire ShopUpdates during canister `postupgrade` by calling `expireShopUpdates()`.",
+      "reason": "REQ-1 asks for a scheduled process running every 10 minutes; running expiry on `postupgrade` is not specified as a requirement (even if it may be useful).",
       "evidence": [
-        "frontend/src/pages/RoleSelectionPage.tsx (truncated)",
-        "frontend/src/components/MobileAppShell.tsx"
-      ]
-    },
-    {
-      "description": "Hiding the bottom navigation bar specifically on the /role-selection route.",
-      "reason": "The BuildRequest does not mention modifying the MobileAppShell UI (bottom navigation visibility). This appears to be an unrelated UI behavior change not requested for role-selection navigation fixes.",
-      "evidence": [
-        "frontend/src/components/MobileAppShell.tsx"
+        "backend/main.mo"
       ]
     }
   ],
-  "confidence": 0.6,
+  "confidence": 0.68,
   "changed_files": [
-    "frontend-file-summaries.txt",
-    "frontend/src/components/MobileAppShell.tsx",
-    "frontend/src/pages/RoleSelectionPage.tsx",
+    "backend/main.mo",
+    "backend/migration.mo",
     "project_state.json"
   ]
 }

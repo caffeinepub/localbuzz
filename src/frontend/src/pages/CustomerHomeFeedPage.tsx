@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,20 +11,35 @@ import { SHOP_CATEGORIES, type ShopCategory } from '../constants/shopCategories'
 import { useNotificationPermission } from '../hooks/useNotificationPermission';
 import { useShopUpdateNotifications } from '../hooks/useShopUpdateNotifications';
 import { getNotificationOptIn, setNotificationOptIn } from '../utils/notificationStorage';
+import { useGetCustomerFavorites, useFavoriteShop, useUnfavoriteShop } from '../hooks/useCustomerFavorites';
 
 export default function CustomerHomeFeedPage() {
   const [selectedCategory, setSelectedCategory] = useState<ShopCategory | null>(null);
   const [notificationOptIn, setNotificationOptInState] = useState(getNotificationOptIn());
+  const [hasAttemptedAutoRequest, setHasAttemptedAutoRequest] = useState(false);
   
-  const { status, coordinates, isLoading: locationLoading } = useLocationPermission();
+  const locationPermission = useLocationPermission();
+  const { status, coordinates, isLoading: locationLoading, requestPermission } = locationPermission;
+  
   const { data: feedItems, isLoading: feedLoading, isFetched } = useCustomerHomeFeed(coordinates, selectedCategory);
-  const { status: notificationStatus, isSupported: notificationSupported, requestPermission } = useNotificationPermission();
+  const { status: notificationStatus, isSupported: notificationSupported, requestPermission: requestNotificationPermission } = useNotificationPermission();
+  const { data: favorites } = useGetCustomerFavorites();
+  const favoriteMutation = useFavoriteShop();
+  const unfavoriteMutation = useUnfavoriteShop();
 
   const showFeed = status === 'granted' && coordinates;
   const isLoadingFeed = locationLoading || feedLoading;
 
-  // Wire up notification hook
-  useShopUpdateNotifications(feedItems, notificationStatus === 'granted');
+  // Auto-request location permission on mount when not yet requested
+  useEffect(() => {
+    if (!hasAttemptedAutoRequest && (status === 'not-requested' || status === 'prompt') && !coordinates) {
+      setHasAttemptedAutoRequest(true);
+      requestPermission();
+    }
+  }, [status, coordinates, hasAttemptedAutoRequest, requestPermission]);
+
+  // Wire up notification hook with backend queue consumer
+  useShopUpdateNotifications(notificationStatus === 'granted' && notificationOptIn);
 
   const handleCategoryClick = (category: ShopCategory) => {
     setSelectedCategory(selectedCategory === category ? null : category);
@@ -42,7 +57,7 @@ export default function CustomerHomeFeedPage() {
       setNotificationOptInState(newOptIn);
     } else {
       // Request permission
-      await requestPermission();
+      await requestNotificationPermission();
       // After requesting, check if permission was granted
       // The hook will update notificationStatus, so we enable opt-in
       // The next render will reflect the new permission state
@@ -86,28 +101,55 @@ export default function CustomerHomeFeedPage() {
   const notificationInfo = getNotificationStatusMessage();
   const NotificationIcon = notificationInfo.icon;
 
+  // Helper to check if a shop is favorited
+  const isShopFavorited = (shopId: string): boolean => {
+    if (!favorites) return false;
+    return favorites.some((shop) => shop.shopId === shopId);
+  };
+
+  // Helper to toggle favorite
+  const handleToggleFavorite = async (shopId: string, currentlyFavorited: boolean) => {
+    try {
+      if (currentlyFavorited) {
+        await unfavoriteMutation.mutateAsync(shopId);
+      } else {
+        await favoriteMutation.mutateAsync(shopId);
+      }
+    } catch (error: any) {
+      console.error('Failed to toggle favorite:', error);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-          <ShoppingBag className="h-8 w-8 text-primary" />
+        <h1 className="text-4xl font-bold text-foreground flex items-center gap-3">
+          <ShoppingBag className="h-10 w-10 text-primary" />
           Discover Local
         </h1>
-        <p className="text-muted-foreground">Find amazing deals from businesses near you</p>
+        <p className="text-lg text-muted-foreground">Find amazing deals from businesses near you</p>
       </div>
 
       {/* Location Card */}
-      <LocationStatusCard />
+      <LocationStatusCard
+        status={locationPermission.status}
+        coordinates={locationPermission.coordinates}
+        errorType={locationPermission.errorType}
+        errorMessage={locationPermission.errorMessage}
+        isLoading={locationPermission.isLoading}
+        requestPermission={locationPermission.requestPermission}
+        refreshLocation={locationPermission.refreshLocation}
+      />
 
       {/* Notifications Card */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <NotificationIcon className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <NotificationIcon className="h-5 w-5 text-primary" />
             Notifications
           </CardTitle>
-          <CardDescription>{notificationInfo.message}</CardDescription>
+          <CardDescription className="text-base">{notificationInfo.message}</CardDescription>
         </CardHeader>
         <CardContent>
           {notificationSupported && notificationStatus !== 'denied' && (
@@ -115,15 +157,16 @@ export default function CustomerHomeFeedPage() {
               onClick={handleEnableNotifications}
               variant={notificationOptIn && notificationStatus === 'granted' ? 'outline' : 'default'}
               className="w-full"
+              size="lg"
             >
               {notificationStatus === 'granted' && notificationOptIn ? (
                 <>
-                  <BellOff className="mr-2 h-4 w-4" />
+                  <BellOff className="mr-2 h-5 w-5" />
                   Disable Notifications
                 </>
               ) : (
                 <>
-                  <Bell className="mr-2 h-4 w-4" />
+                  <Bell className="mr-2 h-5 w-5" />
                   Enable Notifications
                 </>
               )}
@@ -150,15 +193,15 @@ export default function CustomerHomeFeedPage() {
       {/* Category Filter */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold">Filter by Category</h2>
+          <h2 className="text-xl font-semibold">Filter by Category</h2>
           {selectedCategory && (
             <Button
               variant="ghost"
               size="sm"
               onClick={handleClearCategory}
-              className="h-8 px-2 text-xs"
+              className="h-9 px-3 text-sm"
             >
-              <X className="h-3 w-3 mr-1" />
+              <X className="h-4 w-4 mr-1" />
               Clear
             </Button>
           )}
@@ -172,7 +215,7 @@ export default function CustomerHomeFeedPage() {
                 variant={isSelected ? 'default' : 'secondary'}
                 className={`px-4 py-2 text-sm cursor-pointer transition-colors ${
                   isSelected
-                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                    ? 'bg-primary text-white hover:bg-primary/90'
                     : 'hover:bg-secondary/80'
                 }`}
                 onClick={() => handleCategoryClick(category)}
@@ -194,11 +237,11 @@ export default function CustomerHomeFeedPage() {
 
       {/* Nearby Updates Feed */}
       <div>
-        <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-          <MapPin className="h-5 w-5 text-primary" />
+        <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
+          <MapPin className="h-6 w-6 text-primary" />
           Nearby Updates
           {selectedCategory && (
-            <span className="text-sm font-normal text-muted-foreground">
+            <span className="text-base font-normal text-muted-foreground">
               ({selectedCategory})
             </span>
           )}
@@ -206,12 +249,12 @@ export default function CustomerHomeFeedPage() {
 
         {/* Loading State */}
         {isLoadingFeed && (
-          <Card className="bg-muted/50">
+          <Card className="bg-muted/30">
             <CardHeader>
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
-              <CardDescription className="text-center">
+              <CardDescription className="text-center text-base">
                 {locationLoading ? 'Getting your location...' : 'Loading nearby updates...'}
               </CardDescription>
             </CardHeader>
@@ -220,10 +263,10 @@ export default function CustomerHomeFeedPage() {
 
         {/* No Location Permission */}
         {!showFeed && !isLoadingFeed && (
-          <Card className="bg-muted/50">
+          <Card className="bg-muted/30">
             <CardHeader>
-              <CardTitle>Location Required</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-lg">Location Required</CardTitle>
+              <CardDescription className="text-base">
                 Enable location access above to discover updates from local businesses within 3 km
               </CardDescription>
             </CardHeader>
@@ -231,46 +274,29 @@ export default function CustomerHomeFeedPage() {
         )}
 
         {/* Feed Items */}
-        {showFeed && !isLoadingFeed && isFetched && (
-          <>
+        {showFeed && !isLoadingFeed && (
+          <div className="space-y-4">
             {feedItems && feedItems.length > 0 ? (
-              <div className="space-y-4">
-                {feedItems.map((update) => (
-                  <ShopUpdatePostCard key={update.updateId} update={update} />
-                ))}
-              </div>
+              feedItems.map((item) => (
+                <ShopUpdatePostCard
+                  key={item.updateId}
+                  item={item}
+                  distance={item.distance}
+                  isFavorited={isShopFavorited(item.shopId)}
+                  onToggleFavorite={handleToggleFavorite}
+                  showFavoriteButton={true}
+                />
+              ))
             ) : (
-              <Card className="bg-muted/50">
+              <Card className="bg-muted/30">
                 <CardHeader>
-                  <CardTitle>No Nearby Updates</CardTitle>
-                  <CardDescription>
-                    {selectedCategory
-                      ? `There are no active ${selectedCategory} updates from shops within 3 km of your location. Try a different category or check back later!`
-                      : 'There are no active updates from shops within 3 km of your location. Check back later!'}
-                  </CardDescription>
+                  <CardTitle className="text-lg">No active offers nearby.</CardTitle>
                 </CardHeader>
               </Card>
             )}
-          </>
+          </div>
         )}
       </div>
-
-      {/* Coming Soon */}
-      <Card className="bg-muted/50">
-        <CardHeader>
-          <CardTitle>Coming Soon</CardTitle>
-          <CardDescription>
-            Exciting features to enhance your shopping experience
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li>• Browse local shop catalogs</li>
-            <li>• Exclusive deals and offers</li>
-            <li>• Save your favorite shops</li>
-          </ul>
-        </CardContent>
-      </Card>
     </div>
   );
 }

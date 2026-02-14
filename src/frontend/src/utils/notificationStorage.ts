@@ -2,14 +2,15 @@
  * LocalStorage utilities for managing notification state, including:
  * - User opt-in status
  * - Timestamp when notifications were enabled (baseline for new updates)
- * - Set of notified updateIds (prevent duplicates)
- * - Per-shop-per-day notification counters (rate limiting)
+ * - Set of notified notification IDs (prevent duplicates)
+ * - Per-shop-per-day notification counters (rate limiting - legacy, now handled by backend)
  */
 
 const STORAGE_KEYS = {
   OPT_IN: 'localbuzz_notifications_opt_in',
   ENABLED_AT: 'localbuzz_notifications_enabled_at',
   NOTIFIED_IDS: 'localbuzz_notified_update_ids',
+  NOTIFIED_NOTIFICATION_IDS: 'localbuzz_notified_notification_ids',
   SHOP_DAILY_COUNTS: 'localbuzz_shop_daily_counts',
 } as const;
 
@@ -56,7 +57,7 @@ export function setNotificationsEnabledAt(timestamp: number): void {
   }
 }
 
-// Notified update IDs (prevent duplicates)
+// Notified update IDs (prevent duplicates - legacy)
 export function getNotifiedUpdateIds(): Set<string> {
   try {
     const value = localStorage.getItem(STORAGE_KEYS.NOTIFIED_IDS);
@@ -76,7 +77,30 @@ export function addNotifiedUpdateId(updateId: string): void {
   }
 }
 
-// Per-shop-per-day counters (rate limiting)
+// Notified notification IDs (prevent duplicates by backend notification id)
+export function getNotifiedNotificationIds(): Set<string> {
+  try {
+    const value = localStorage.getItem(STORAGE_KEYS.NOTIFIED_NOTIFICATION_IDS);
+    return value ? new Set(JSON.parse(value)) : new Set();
+  } catch {
+    return new Set();
+  }
+}
+
+export function addNotifiedNotificationId(notificationId: string): void {
+  try {
+    const ids = getNotifiedNotificationIds();
+    ids.add(notificationId);
+    // Keep only the last 1000 notification IDs to prevent unbounded growth
+    const idsArray = [...ids];
+    const trimmedIds = idsArray.slice(-1000);
+    localStorage.setItem(STORAGE_KEYS.NOTIFIED_NOTIFICATION_IDS, JSON.stringify(trimmedIds));
+  } catch (error) {
+    console.error('Failed to add notified notification ID:', error);
+  }
+}
+
+// Per-shop-per-day counters (rate limiting - legacy, now handled by backend)
 interface ShopDailyCounts {
   [key: string]: number; // key format: "shopId_YYYY-MM-DD"
 }

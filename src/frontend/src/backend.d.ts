@@ -22,42 +22,64 @@ export interface Location {
 export interface FeedShopUpdate {
     title: string;
     shopCategory: string;
-    shopId: Principal;
+    shopId: string;
+    ownerId: Principal;
     expiryDate: Time;
-    shopLocation: Location;
+    createdAt: Time;
     description?: string;
+    isActive: boolean;
     updateId: string;
-    timestamp: Time;
     shopName: string;
     image?: ExternalBlob;
-}
-export type Time = bigint;
-export interface Shop {
-    latitude: number;
-    owner: Principal;
-    name: string;
-    createdAt: Time;
-    lastUpdated: Time;
-    longitude: number;
-    address: string;
-    category: string;
-    image: ExternalBlob;
+    location: GeoPoint;
 }
 export interface UserProfile {
     lastKnownLocation?: Location;
+    name?: string;
     createdAt: Time;
     role: UserRole;
     lastUpdated: Time;
     phoneNumber: string;
 }
+export type Time = bigint;
 export interface ShopUpdate {
     title: string;
-    shopId: Principal;
+    expiredAt?: Time;
+    shopId: string;
+    ownerId: Principal;
     expiryDate: Time;
-    shopLocation: Location;
+    createdAt: Time;
     description?: string;
-    timestamp: Time;
+    isActive: boolean;
+    updateId: string;
     image?: ExternalBlob;
+    location: GeoPoint;
+}
+export type NotificationId = string;
+export interface Notification {
+    id: NotificationId;
+    shopId: string;
+    createdAt: Time;
+    recipient: Principal;
+    distance: number;
+    isActive: boolean;
+    shopUpdateId: string;
+}
+export interface Shop {
+    shopImage: ExternalBlob;
+    shopId: string;
+    ownerId: Principal;
+    createdAt: Time;
+    lastUpdated: Time;
+    isOpen: boolean;
+    address: string;
+    shopName: string;
+    category: string;
+    location: GeoPoint;
+}
+export interface GeoPoint {
+    latitude: number;
+    longitude: number;
 }
 export enum UserRole {
     admin = "admin",
@@ -65,26 +87,36 @@ export enum UserRole {
     guest = "guest"
 }
 export interface backendInterface {
+    acknowledgeNotifications(notificationIds: Array<NotificationId>): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
-    createShopUpdate(shopId: Principal, title: string, description: string | null, image: ExternalBlob | null, expiryDate: Time): Promise<string>;
+    createShopUpdate(shopId: string, title: string, description: string | null, image: ExternalBlob | null, expiryDate: Time): Promise<string>;
     deleteShopUpdate(updateId: string): Promise<void>;
+    favoriteShop(shopId: string): Promise<void>;
     getAllActiveShopUpdates(): Promise<Array<ShopUpdate>>;
     getAllProfilesByRole(role: UserRole): Promise<Array<UserProfile>>;
-    getAllShopUpdatesForShop(shopId: Principal): Promise<Array<ShopUpdate>>;
+    getAllShopUpdatesForShop(shopId: string): Promise<Array<ShopUpdate>>;
     getAllShops(): Promise<Array<Shop>>;
+    getAllUsers(): Promise<Array<UserProfile>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
-    getCustomerHomeFeed(): Promise<Array<FeedShopUpdate>>;
+    getCustomerFavorites(): Promise<Array<Shop>>;
+    getCustomerHomeFeed(referenceLat: number, referenceLon: number): Promise<Array<FeedShopUpdate>>;
     getLastKnownLocation(): Promise<Location | null>;
     getOtpChallenge(phoneNumber: string): Promise<string>;
-    getShop(owner: Principal): Promise<Shop | null>;
+    getPendingNotifications(): Promise<Array<Notification>>;
+    getShopById(shopId: string): Promise<Shop | null>;
+    getShopOpenStatus(shopId: string): Promise<boolean>;
     getShopUpdate(updateId: string): Promise<ShopUpdate | null>;
+    getShopsByOwner(ownerId: Principal): Promise<Array<Shop>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
-    registerShop(name: string, category: string, address: string, latitude: number, longitude: number, image: ExternalBlob): Promise<Shop>;
-    saveCallerUserProfile(phoneNumber: string, role: UserRole): Promise<void>;
+    isShopFavoritedByCaller(shopId: string): Promise<boolean>;
+    registerShop(shopName: string, category: string, address: string, location: GeoPoint, shopImage: ExternalBlob): Promise<Shop>;
+    saveCallerUserProfile(name: string | null, phoneNumber: string, role: UserRole): Promise<void>;
     setLastKnownLocation(location: Location): Promise<void>;
-    updateShop(name: string, category: string, address: string, latitude: number, longitude: number, image: ExternalBlob): Promise<Shop>;
+    setShopOpenStatus(shopId: string, isOpen: boolean): Promise<void>;
+    unfavoriteShop(shopId: string): Promise<void>;
+    updateShop(shopId: string, shopName: string, category: string, address: string, location: GeoPoint, shopImage: ExternalBlob): Promise<Shop>;
     updateShopUpdate(updateId: string, title: string, description: string | null, image: ExternalBlob | null, expiryDate: Time): Promise<void>;
     verifyOtpToken(phoneNumber: string, code: string): Promise<void>;
 }

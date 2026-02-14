@@ -1,81 +1,41 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { MapPin, RefreshCw, AlertCircle, CheckCircle, XCircle, Info } from 'lucide-react';
-import { useLocationPermission } from '../hooks/useLocationPermission';
-import { usePersistLastKnownLocation } from '../hooks/usePersistLastKnownLocation';
+import { MapPin, Loader2, AlertCircle, CheckCircle, MapPinOff } from 'lucide-react';
+import type { LocationPermissionStatus, Coordinates, GeolocationErrorType } from '../hooks/useLocationPermission';
 
-export default function LocationStatusCard() {
-  const { status, coordinates, errorType, errorMessage, isLoading, requestPermission, refreshLocation } =
-    useLocationPermission();
-  const { isPersisting } = usePersistLastKnownLocation(coordinates);
+interface LocationStatusCardProps {
+  status: LocationPermissionStatus;
+  coordinates: Coordinates | null;
+  errorType: GeolocationErrorType;
+  errorMessage: string | null;
+  isLoading: boolean;
+  requestPermission: () => Promise<void>;
+  refreshLocation: () => Promise<void>;
+}
 
-  const getStatusBadge = () => {
-    switch (status) {
-      case 'granted':
-        return (
-          <Badge variant="default" className="gap-1">
-            <CheckCircle className="h-3 w-3" />
-            Granted
-          </Badge>
-        );
-      case 'denied':
-        return (
-          <Badge variant="destructive" className="gap-1">
-            <XCircle className="h-3 w-3" />
-            Denied
-          </Badge>
-        );
-      case 'prompt':
-        return (
-          <Badge variant="secondary" className="gap-1">
-            <Info className="h-3 w-3" />
-            Ready to Enable
-          </Badge>
-        );
-      default:
-        return (
-          <Badge variant="secondary" className="gap-1">
-            <AlertCircle className="h-3 w-3" />
-            Not Requested
-          </Badge>
-        );
-    }
-  };
-
-  const formatCoordinate = (value: number, decimals: number = 6) => {
-    return value.toFixed(decimals);
-  };
-
-  const formatTimestamp = (timestamp: number) => {
-    return new Date(timestamp).toLocaleString();
-  };
-
-  const getDescriptionText = () => {
-    if (status === 'granted') {
-      return 'Your location is being tracked';
-    }
-    if (status === 'denied') {
-      return 'Location permission is required for this feature';
-    }
-    return 'Grant location permission to use location features';
-  };
-
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
+export default function LocationStatusCard({
+  status,
+  coordinates,
+  errorType,
+  errorMessage,
+  isLoading,
+  requestPermission,
+  refreshLocation,
+}: LocationStatusCardProps) {
+  // Not requested yet
+  if (status === 'prompt') {
+    return (
+      <Card className="border-primary/30 bg-primary/5">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
             <MapPin className="h-5 w-5 text-primary" />
             Location Access
           </CardTitle>
-          {getStatusBadge()}
-        </div>
-        <CardDescription>{getDescriptionText()}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Not requested or prompt state - show enable button */}
-        {(status === 'not-requested' || status === 'prompt') && (
+          <CardDescription className="text-base">
+            Enable location to discover nearby shops and updates
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
           <Button
             onClick={requestPermission}
             disabled={isLoading}
@@ -84,137 +44,121 @@ export default function LocationStatusCard() {
           >
             {isLoading ? (
               <>
-                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                 Requesting...
               </>
             ) : (
               <>
-                <MapPin className="mr-2 h-4 w-4" />
+                <MapPin className="mr-2 h-5 w-5" />
                 Enable Location
               </>
             )}
           </Button>
-        )}
+        </CardContent>
+      </Card>
+    );
+  }
 
-        {/* Denied state - show guidance and retry */}
-        {status === 'denied' && (
-          <div className="space-y-3">
-            <div className="rounded-lg bg-destructive/10 p-4 space-y-2">
-              <div className="flex items-start gap-2">
-                <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
-                <div className="space-y-2 flex-1">
-                  <p className="text-sm font-medium text-destructive">
-                    Location Access Denied
-                  </p>
-                  <p className="text-sm text-destructive/90">
-                    To enable location access:
-                  </p>
-                  <ol className="text-sm text-destructive/90 list-decimal list-inside space-y-1 ml-2">
-                    <li>Click the lock icon in your browser's address bar</li>
-                    <li>Find "Location" in the permissions list</li>
-                    <li>Change the setting to "Allow"</li>
-                    <li>Click the button below to try again</li>
-                  </ol>
-                </div>
-              </div>
-            </div>
-            <Button
-              onClick={requestPermission}
-              disabled={isLoading}
-              className="w-full"
-              size="lg"
-            >
-              {isLoading ? (
-                <>
-                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                  Trying Again...
-                </>
-              ) : (
-                <>
-                  <MapPin className="mr-2 h-4 w-4" />
-                  Try Again
-                </>
-              )}
-            </Button>
-          </div>
-        )}
+  // Permission denied
+  if (status === 'denied') {
+    return (
+      <Card className="border-destructive/30 bg-destructive/5">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <MapPinOff className="h-5 w-5 text-destructive" />
+            Location Blocked
+          </CardTitle>
+          <CardDescription className="text-base">
+            Location access is blocked. To enable it:
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
+            <li>Open your browser settings</li>
+            <li>Find Site Settings or Permissions</li>
+            <li>Allow location access for this site</li>
+            <li>Refresh the page</li>
+          </ol>
+        </CardContent>
+      </Card>
+    );
+  }
 
-        {/* Error messages for timeout and unavailable (not permission denied) */}
-        {errorType && errorType !== 'permission-denied' && errorMessage && (
-          <div className="space-y-3">
-            <div className="rounded-lg bg-warning/10 border border-warning/20 p-4">
-              <div className="flex items-start gap-2">
-                <AlertCircle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />
-                <div className="space-y-1 flex-1">
-                  <p className="text-sm font-medium text-warning">
-                    {errorType === 'timeout' && 'Location Request Timed Out'}
-                    {errorType === 'position-unavailable' && 'Location Unavailable'}
-                    {errorType === 'unsupported' && 'Location Not Supported'}
-                  </p>
-                  <p className="text-sm text-muted-foreground">{errorMessage}</p>
-                </div>
-              </div>
-            </div>
-            <Button
-              onClick={requestPermission}
-              disabled={isLoading}
-              variant="outline"
-              className="w-full"
-              size="lg"
-            >
-              {isLoading ? (
-                <>
-                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                  Retrying...
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  Retry
-                </>
-              )}
-            </Button>
-          </div>
-        )}
+  // Permission granted
+  if (status === 'granted') {
+    return (
+      <Card className="border-primary/30 bg-primary/5">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <CheckCircle className="h-5 w-5 text-primary" />
+            Location Enabled
+          </CardTitle>
+          <CardDescription className="text-base">
+            {coordinates
+              ? `Latitude: ${coordinates.latitude.toFixed(4)}, Longitude: ${coordinates.longitude.toFixed(4)}`
+              : 'Getting your location...'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button
+            onClick={refreshLocation}
+            disabled={isLoading}
+            variant="outline"
+            className="w-full"
+            size="lg"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Refreshing...
+              </>
+            ) : (
+              <>
+                <MapPin className="mr-2 h-5 w-5" />
+                Refresh Location
+              </>
+            )}
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
-        {/* Granted state - show coordinates and refresh */}
-        {status === 'granted' && coordinates && (
-          <div className="space-y-3">
-            <div className="rounded-lg bg-muted p-4 space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium text-muted-foreground">Latitude</span>
-                <span className="text-sm font-mono">{formatCoordinate(coordinates.latitude)}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium text-muted-foreground">Longitude</span>
-                <span className="text-sm font-mono">{formatCoordinate(coordinates.longitude)}</span>
-              </div>
-              <div className="flex justify-between items-center pt-2 border-t border-border">
-                <span className="text-xs text-muted-foreground">Last Updated</span>
-                <span className="text-xs">{formatTimestamp(coordinates.timestamp)}</span>
-              </div>
-            </div>
-            <Button
-              onClick={refreshLocation}
-              disabled={isLoading || isPersisting}
-              variant="outline"
-              className="w-full"
-            >
-              {isLoading || isPersisting ? (
-                <>
-                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                  {isPersisting ? 'Saving...' : 'Refreshing...'}
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  Refresh Location
-                </>
-              )}
-            </Button>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
+  // Error state
+  if (errorMessage) {
+    const isTimeout = errorType === 'timeout';
+    const isUnavailable = errorType === 'position-unavailable';
+
+    return (
+      <Card className="border-destructive/30 bg-destructive/5">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <AlertCircle className="h-5 w-5 text-destructive" />
+            Location Error
+          </CardTitle>
+          <CardDescription className="text-base">{errorMessage}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button
+            onClick={isTimeout || isUnavailable ? refreshLocation : requestPermission}
+            disabled={isLoading}
+            variant="outline"
+            className="w-full"
+            size="lg"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Retrying...
+              </>
+            ) : (
+              'Try Again'
+            )}
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return null;
 }
